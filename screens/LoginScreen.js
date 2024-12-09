@@ -14,12 +14,14 @@ import { auth } from "../firebase";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCurrentUser, updateUserStatus } from "../redux/user/userActions";
+import { Entypo } from 'react-native-vector-icons';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(true); // State for initial loading
-  const [navigating, setNavigating] = useState(false); // State for navigation loading
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState(false);
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const { currentUser, status } = useSelector((state) => state.user);
@@ -60,7 +62,7 @@ const LoginScreen = () => {
         password
       );
       const user = userCredentials.user;
-      console.log("User  logged in");
+      console.log("User logged in");
       if (user.emailVerified) {
         dispatch(fetchCurrentUser());
         dispatch(updateUserStatus({ userId: user.uid, status: "online" }));
@@ -119,21 +121,23 @@ const LoginScreen = () => {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          <TextInput
-            placeholder="Password"
-            value={password}
-            onChangeText={(text) => setPassword(text)}
-            style={styles.input}
-            secureTextEntry
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput placeholder="Password" value={password}
+              onChangeText={(text) => setPassword(text)}
+              style={styles.input}
+              secureTextEntry={!showPassword} // Toggle secureTextEntry based on state
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.iconContainer}>
+              <Entypo name={showPassword ? "eye-with-line" : "eye"} size={24} color="black"/>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={handleLogin} style={styles.button}>
           <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleSignUpNavigation}
+        <TouchableOpacity onPress={handleSignUpNavigation}
           style={styles.signUpTextContainer}
         >
           <Text style={styles.signUpText}>Don't have an account? Sign Up</Text>
@@ -142,6 +146,7 @@ const LoginScreen = () => {
     </View>
   );
 };
+
 
 export default LoginScreen;
 
@@ -178,6 +183,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     marginTop: 5,
+  },
+  passwordContainer: {
+    position: 'relative',
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconContainer: {
+    position: 'absolute',
+    top: 16,
+    right: 12,
+    opacity: .35,
   },
   buttonContainer: {
     width: "100%",

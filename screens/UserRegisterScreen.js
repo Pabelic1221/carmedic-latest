@@ -21,6 +21,7 @@ import {
 import { doc, setDoc } from "firebase/firestore";
 import Icon from "react-native-vector-icons/Ionicons";
 import { uploadImageToCloudinary } from "../helpers/cloudinary";
+import { Entypo } from 'react-native-vector-icons';
 
 const UserRegisterScreen = ({ navigation }) => {
   const [firstName, setFirstName] = useState("");
@@ -30,6 +31,8 @@ const UserRegisterScreen = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [profilePicUrl, setProfilePicUrl] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setshowConfirmPassword] = useState(false);
 
   const handleProfileImageUpload = async () => {
     try {
@@ -125,46 +128,55 @@ const UserRegisterScreen = ({ navigation }) => {
           </TouchableOpacity>
           <Text style={styles.avatarText}>Tap to upload profile image</Text>
         </View>
-
-        <TextInput
-          style={styles.input}
-          value={firstName}
-          onChangeText={setFirstName}
-          placeholder="First Name"
-        />
-        <TextInput
-          style={styles.input}
-          value={lastName}
-          onChangeText={setLastName}
-          placeholder="Last Name"
-        />
-        <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Email"
-          autoCapitalize="none"
-        />
-        <TextInput
-          style={styles.input}
-          value={address}
-          onChangeText={setAddress}
-          placeholder="Address"
-        />
-        <TextInput
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Password"
-          secureTextEntry
-        />
-        <TextInput
-          style={styles.input}
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          placeholder="Confirm Password"
-          secureTextEntry
-        />
+        <View style={styles.inputWrapper}>
+          <View style={styles.inputContainer}>
+            <TextInput
+             style={styles.input}
+              value={firstName}
+             onChangeText={setFirstName}
+             placeholder="First Name"
+           />
+           <TextInput
+             style={styles.input}
+             value={lastName}
+             onChangeText={setLastName}
+             placeholder="Last Name"
+           />
+           <TextInput
+             style={styles.input}
+             value={email}
+             onChangeText={setEmail}
+             placeholder="Email"
+             autoCapitalize="none"
+           />
+           <TextInput
+             style={styles.input}
+             value={address}
+             onChangeText={setAddress}
+             placeholder="Address"
+           />
+           <View style={styles.passwordContainer}>
+               <TextInput placeholder="Password" value={password}
+                 onChangeText={(text) => setPassword(text)}
+                 style={styles.input}
+                 secureTextEntry={!showPassword} // Toggle secureTextEntry based on state
+               />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.iconContainer}>
+                  <Entypo name={showPassword ? "eye-with-line" : "eye"} size={24} color="black"/>
+               </TouchableOpacity>
+             </View>
+             <View style={styles.passwordContainer}>
+               <TextInput placeholder=" Confirm Password" value={confirmPassword}
+                 onChangeText={(text) => setConfirmPassword(text)}
+                 style={styles.input}
+                 secureTextEntry={!showConfirmPassword} // Toggle secureTextEntry based on state
+               />
+                <TouchableOpacity onPress={() => setshowConfirmPassword(!showConfirmPassword)} style={styles.iconContainer}>
+                  <Entypo name={showConfirmPassword ? "eye-with-line" : "eye"} size={24} color="black"/>
+               </TouchableOpacity>
+             </View>
+          </View>
+        </View>
 
         <TouchableOpacity style={styles.registerButton} onPress={handleSignUp}>
           <Text style={styles.registerButtonText}>Register</Text>
@@ -198,6 +210,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f8f8",
     marginBottom: 20,
   },
+  inputWrapper: {
+    width: "100%",
+  },
+  passwordContainer: {
+    position: 'relative',
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconContainer: {
+    position: 'absolute',
+    top: 16,
+    right: 12,
+    opacity: .35,
+  },
   backButton: {
     position: "absolute",
     left: 10,
@@ -222,13 +248,15 @@ const styles = StyleSheet.create({
     color: "#777",
   },
   input: {
-    height: 50,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 5,
+    width: "100%",
+    backgroundColor: "white",
     paddingHorizontal: 15,
-    marginVertical: 10,
-    backgroundColor: "#fff",
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    marginTop: 5,
+    marginBottom: 10,
   },
   registerButton: {
     height: 50,

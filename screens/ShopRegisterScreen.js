@@ -15,6 +15,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { Marker } from "react-native-maps";
 import { getAddressFromCoordinates } from "../helpers/maps/getAddress";
 import * as ImagePicker from "expo-image-picker";
+import { Entypo } from 'react-native-vector-icons';
 
 const ShopRegisterScreen = ({ navigation }) => {
   const [shopName, setShopName] = useState("");
@@ -22,6 +23,8 @@ const ShopRegisterScreen = ({ navigation }) => {
   const [address, setAddress] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setshowConfirmPassword] = useState(false);
   const [markerLocation, setMarkerLocation] = useState(null);
   const [profilePic, setProfilePic] = useState(null);
   const [ownerIdPic, setOwnerIdPic] = useState(null);
@@ -100,6 +103,7 @@ const ShopRegisterScreen = ({ navigation }) => {
           <Text style={styles.appBarTitle}>Register Auto Repair Shop</Text>
         </View>
 
+        <View style={styles.inputWrapper}>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
@@ -150,20 +154,27 @@ const ShopRegisterScreen = ({ navigation }) => {
             )}
           </TouchableOpacity>
 
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Password"
-            secureTextEntry
-          />
-          <TextInput
-            style={styles.input}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            placeholder="Confirm Password"
-            secureTextEntry
-          />
+          <View style={styles.passwordContainer}>
+               <TextInput placeholder="Password" value={password}
+                 onChangeText={(text) => setPassword(text)}
+                 style={styles.input}
+                 secureTextEntry={!showPassword} // Toggle secureTextEntry based on state
+               />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.iconContainer}>
+                  <Entypo name={showPassword ? "eye-with-line" : "eye"} size={24} color="black"/>
+               </TouchableOpacity>
+             </View>
+             <View style={styles.passwordContainer}>
+               <TextInput placeholder=" Confirm Password" value={confirmPassword}
+                 onChangeText={(text) => setConfirmPassword(text)}
+                 style={styles.input}
+                 secureTextEntry={!showConfirmPassword} // Toggle secureTextEntry based on state
+               />
+                <TouchableOpacity onPress={() => setshowConfirmPassword(!showConfirmPassword)} style={styles.iconContainer}>
+                  <Entypo name={showConfirmPassword ? "eye-with-line" : "eye"} size={24} color="black"/>
+               </TouchableOpacity>
+             </View>
+        </View>
         </View>
 
         <TouchableOpacity style={styles.registerButton} onPress={handleNext}>
@@ -208,19 +219,35 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000",
   },
+  inputWrapper: {
+    width: "100%",
+  },
   inputContainer: {
     marginTop: 20,
     width: "100%",
     marginBottom: 20,
   },
   input: {
-    height: 50,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 5,
+    width: "100%",
+    backgroundColor: "white",
     paddingHorizontal: 15,
-    marginVertical: 10,
-    backgroundColor: "#fff",
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    marginTop: 5,
+    marginBottom: 10,
+  },
+  passwordContainer: {
+    position: 'relative',
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconContainer: {
+    position: 'absolute',
+    top: 16,
+    right: 12,
+    opacity: .35,
   },
   registerButton: {
     height: 50,
