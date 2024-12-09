@@ -114,14 +114,47 @@ const AutoRepairShopsScreen = () => {
               <Ionicons name="location-outline" size={16} color="gray" />
               {shop.address}
             </Text>
-            {shop.specialties && shop.specialties.length > 0 && (
-              <Text style={styles.shopSpecialties}>
-                <Ionicons name="list-outline" size={16} color="gray" />
-                Specialties: {shop.specialties.join(", ")}
+            {/* Shop Ratings Section */}
+            <View style={styles.ratingsContainer}>
+              <Text style={styles.shopRatings}>
+               Ratings: {shop.averageRating ? shop.averageRating : "0 ratings"}
               </Text>
-            )}
+            </View>
           </View>
         </View>
+        {/* Services Heading Section */}
+        <View style={styles.servicesContainer}>
+          <Text style={styles.servicesHeading}>Services</Text>
+        </View>
+  
+        {/* Shop Specialties Section */}
+        <View style={styles.specialtiesContainer}>
+          {shop.specialties && shop.specialties.length > 0 ? (
+            <Text style={styles.shopSpecialties}>
+              {shop.specialties.join("  ,   ")}
+            </Text>
+          ) : (
+            <Text style={styles.noServicesText}>No current Services available</Text>
+          )}
+        </View>
+
+        {/* Contact Heading Section */}
+        <View style={styles.contactContainer}>
+          <Text style={styles.contactHeading}>Contact</Text>
+          <Text style={styles.contactNumber}>
+            Phone: {shop.contactNumber ? shop.contactNumber : "(no phone number)"}
+          </Text>
+          <Text style={styles.contactEmail}>
+            Email: {shop.email ? shop.email : "(no email provided)"}
+          </Text>
+        </View>
+
+        {/* Hours Heading Section */}
+        <View style={styles.hoursContainer}>
+          <Text style={styles.hoursHeading}>Hours</Text>
+          <Text style={styles.hoursText}>8 AM - 6 PM</Text>
+        </View>
+
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.chatButton} onPress={handleChatPress}>
@@ -133,7 +166,7 @@ const AutoRepairShopsScreen = () => {
           >
             <Text style={styles.requestButtonText}>Request</Text>
           </TouchableOpacity>
-
+  
           <Modal
             visible={isModalVisible}
             onBackdropPress={handleCloseRequestModal}
@@ -154,7 +187,7 @@ const AutoRepairShopsScreen = () => {
         >
           <Text style={styles.reviewButtonText}>Leave a Review</Text>
         </TouchableOpacity>
-
+  
         {/* Review Modal */}
         <ReviewModal
           visible={isReviewModalVisible}
@@ -186,7 +219,7 @@ const styles = StyleSheet.create({
     color: "white",
   },
   contentContainer: {
-    marginTop: 15,
+    marginTop: 5,
     marginHorizontal: 10,
     flex: 1,
     padding: 16,
@@ -224,6 +257,9 @@ const styles = StyleSheet.create({
   servicesContainer: {
     flex: 1,
   },
+  contactContainer: {
+    flex: 1,
+  },
   reviewsContainer: {
     flex: 1,
     alignItems: "center",
@@ -249,7 +285,7 @@ const styles = StyleSheet.create({
     color: "gray",
   },
   contactContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   hoursContainer: {
     marginBottom: 20,
@@ -290,16 +326,41 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)", // Dark background with opacity
   },
   modalContent: {
-    height: "70%",
+    height: "80%",
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
     overflow: "scroll",
   },
+  shopRatings: {
+    fontSize: 14,
+    color: "#333",
+    marginVertical: 5,
+  },
+  servicesHeading: {
+    fontSize: 25,
+    fontWeight: "bold",
+    marginVertical: 5
+  },
+  contactHeading: {
+    fontSize: 25,
+    fontWeight: "bold",
+    marginVertical: 5
+  },
+  servicesContainer: {
+    marginBottom: 2,
+  },
   shopSpecialties: {
     color: "gray",
-    marginTop: 5,
-    fontSize: 14,
+    marginTop: 0,
+    fontSize: 15,
+    marginBottom: 10
+  },
+  noServicesText: {
+    color: "red",
+    fontSize: 15,
+    fontStyle: "italic",
+    marginBottom: 10,
   },
   reviewButton: {
     backgroundColor: "black",
@@ -311,6 +372,34 @@ const styles = StyleSheet.create({
   reviewButtonText: {
     color: "white",
     fontWeight: "bold",
+  },
+  // New styles for the additional sections
+  ratingsContainer: {
+    marginVertical: 2,
+  },
+  specialtiesContainer: {
+    marginVertical: 10,
+  },
+  contactNumber: {
+    color: "gray",
+    marginVertical: 2
+  },
+  contactEmail: {
+    color: "gray",
+    marginVertical: 2
+  },
+  hoursContainer: {
+    marginBottom: 20,
+  },
+  hoursHeading: {
+    fontSize: 25,
+    fontWeight: "bold",
+    marginVertical: 5,
+  },
+  hoursText: {
+    fontSize: 16,
+    color: "gray",
+    marginVertical: 2,
   },
 });
 export default AutoRepairShopsScreen;

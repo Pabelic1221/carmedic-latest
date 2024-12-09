@@ -12,12 +12,15 @@ import {
 } from "react-native";
 import { getFirestore, collection, query, getDocs } from "firebase/firestore";
 import AppBar from "./AppBar";
+import { useNavigation } from "@react-navigation/native"; // Import useNavigation
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 const ShopListScreen = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [shops, setShops] = useState([]);
   const [filteredShops, setFilteredShops] = useState([]);
   const [loading, setLoading] = useState(true); // Add loading state
+  const navigation = useNavigation(); // Get navigation object
 
   useEffect(() => {
     const fetchShops = async () => {
@@ -111,12 +114,13 @@ const ShopListScreen = () => {
             : `Average Rating: ${item.averageRating}`}
         </Text>
       </View>
-      <TouchableOpacity style={styles.moreIcon}>
-        <Text>{">"}</Text>
+      <TouchableOpacity
+       style={styles.moreIcon}
+        onPress={() => navigation.navigate("Auto Repair Shop", { item })} // Navigate to AutoRepairShopScreen
+      ><Ionicons name="chevron-forward" size={24} color="#000" />
       </TouchableOpacity>
     </View>
   );
-
   return (
     <SafeAreaView style={styles.container}>
       <AppBar />
@@ -129,88 +133,71 @@ const ShopListScreen = () => {
         />
       </View>
       {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
+        <ActivityIndicator size="large" color="#0000ff" style = {styles.loadingIndicator} />
       ) : (
         <FlatList
           data={filteredShops}
-          keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyMessage}>No shops found.</Text>
-            </View>
-          }
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContainer}
         />
       )}
     </SafeAreaView>
   );
 };
 
-export default ShopListScreen;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
+    backgroundColor: "#fff",
   },
   searchContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    margin: 10,
+    padding: 10,
   },
   searchBar: {
-    flex: 1,
     height: 40,
-    borderColor: "gray",
+    borderColor: "#ccc",
     borderWidth: 1,
-    paddingLeft: 10,
     borderRadius: 5,
+    paddingHorizontal: 10,
+  },
+  listContainer: {
+    paddingBottom: 20,
   },
   listItem: {
     flexDirection: "row",
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
-    alignItems: "center",
   },
   iconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#ccc",
-    justifyContent: "center",
-    alignItems: "center",
+    width: 50,
+    height: 50,
+    marginRight: 10,
   },
   icon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: "100%",
+    height: "100%",
+    borderRadius: 25,
   },
   shopDetails: {
     flex: 1,
-    marginLeft: 10,
   },
   shopName: {
-    fontSize: 18,
     fontWeight: "bold",
   },
   shopInfo: {
-    fontSize: 16,
     color: "#666",
   },
   moreIcon: {
-    marginRight: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    width: 30,
+    height: 30,
   },
-  emptyContainer: {
-    padding: 20,
-  },
-  emptyMessage: {
-    textAlign: "center",
-    marginTop: 20,
-    fontSize: 16,
-  },
-  loader: {
+  loadingIndicator: {
     marginTop: 20,
   },
 });
+
+export default ShopListScreen;

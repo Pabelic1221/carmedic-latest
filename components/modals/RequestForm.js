@@ -131,7 +131,8 @@ export default function RequestForm({ shop, onClose }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 40,
+    paddingTop: 10,
     backgroundColor: "#fff",
   },
   closeButton: {
@@ -192,12 +193,12 @@ const pickerSelectStyles = StyleSheet.create({
     color: "#000",
   },
   inputAndroid: {
-    height: 40,
+    height: 50,
     borderColor: "#ccc",
-    borderWidth: 1,
+    borderWidth: 5,
     borderRadius: 8,
     paddingHorizontal: 10,
-    marginBottom: 15,
+    marginBottom: 20,
     color: "#000",
   },
 });
