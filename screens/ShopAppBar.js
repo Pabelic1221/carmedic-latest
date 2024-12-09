@@ -49,7 +49,6 @@ const styles = StyleSheet.create({
   },
   appBar: {
     position: "relative", // Positioning the app bar at the top
-    top: 30,
     left: 0,
     right: 0,
     flexDirection: "row",
@@ -65,7 +64,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   container: {
-    marginBottom: 40,
+    marginBottom: 20,
   },
   scrollViewContent: {
     paddingTop: Platform.OS === "android" ? 75 : 100, // Add padding to avoid content overlap

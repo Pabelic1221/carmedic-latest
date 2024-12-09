@@ -46,13 +46,12 @@ const styles = StyleSheet.create({
   },
   appBar: {
     position: "relative", // Positioning the app bar at the top
-    top: 10,
     left: 0,
     right: 0,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 30,
+    paddingVertical: 10,
     paddingHorizontal: 20,
     backgroundColor: "#000",
   },

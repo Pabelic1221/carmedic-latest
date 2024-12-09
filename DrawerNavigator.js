@@ -73,9 +73,9 @@ function DrawerNavigator() {
         unmountOnBlur: true,
 
         drawerStyle: {
+          height: "100%",
           width: 250,
           backgroundColor: "#fff",
-          marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
         },
         overlayColor: "rgba(0,0,0,0.5)",
       }}

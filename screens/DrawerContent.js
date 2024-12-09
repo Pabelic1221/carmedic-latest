@@ -126,7 +126,7 @@ const DrawerContent = memo((props) => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 30,
     backgroundColor: "#fff",
     justifyContent: "center",
   },
@@ -153,10 +153,10 @@ const styles = StyleSheet.create({
   drawerItemsContainer: {
     flex: 0,
     justifyContent: "center",
-    marginHorizontal: 20,
+    marginHorizontal: 20
   },
   drawerItem: {
-    paddingVertical: 15,
+    paddingVertical: 10,
     alignItems: "flex-start",
   },
   drawerItemText: {
