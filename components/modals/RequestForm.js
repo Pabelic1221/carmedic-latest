@@ -6,14 +6,16 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Modal
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import RNPickerSelect from "react-native-picker-select";
 import { auth, db } from "../../firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { useSelector } from "react-redux";
+import { Ionicons } from "@expo/vector-icons";
 
-export default function RequestForm({ shop, onClose }) {
+export default function RequestForm({ visible, shop, onClose }) {
   const [problem, setProblem] = useState("");
   const [carBrand, setCarBrand] = useState("");
   const [carModel, setCarModel] = useState("");
@@ -23,22 +25,21 @@ export default function RequestForm({ shop, onClose }) {
   );
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Check user authentication status on component mount
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        setIsAuthenticated(true); // User is authenticated
+        setIsAuthenticated(true);
       } else {
         console.error("User not authenticated");
-        setIsAuthenticated(false); // User is not authenticated
+        setIsAuthenticated(false);
       }
     });
 
-    return () => unsubscribe(); // Clean up the auth listener
+    return () => unsubscribe();
   }, []);
 
   const handleSubmit = async () => {
-    const userId = auth.currentUser?.uid; // Ensure current user is available
+    const userId = auth.currentUser?.uid;
 
     if (!userId) {
       Alert.alert("User is not authenticated. Please log in first.");
@@ -46,10 +47,8 @@ export default function RequestForm({ shop, onClose }) {
     }
 
     try {
-      // Reference to the 'requests' collection
       const requestsRef = collection(db, "requests");
 
-      // Add a new document with a generated ID
       await addDoc(requestsRef, {
         userId,
         storeId: shop.id,
@@ -75,60 +74,82 @@ export default function RequestForm({ shop, onClose }) {
       <View style={styles.container}>
         <Text style={styles.errorText}>Please log in to submit a request.</Text>
         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <Icon name="close" size={24} color="#000" />
+          <Icon name="close-circle" size={24} color="#000" />
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-        <Icon name="close" size={24} color="#000" />
-      </TouchableOpacity>
-      <Text style={styles.title}>Request</Text>
+    <Modal visible={visible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalBackground}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalContainer}>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Ionicons name="close-circle" size={35} color="#000" />
+            </TouchableOpacity>
+            <Text style={styles.title}>Request</Text>
 
-      <Text style={styles.label}>Select Service Request</Text>
-      <RNPickerSelect
-        onValueChange={(value) => setProblem(value)}
-        items={shop.specialties.map((specialties) => ({
-          label: specialties,
-          value: specialties,
-        }))}
-        style={pickerSelectStyles}
-        placeholder={{ label: "Select", value: null }}
-      />
+            <Text style={styles.label}>Select Service Request</Text>
+            <RNPickerSelect
+              onValueChange={(value) => setProblem(value)}
+              items={shop.specialties.map((specialties) => ({
+                label: specialties,
+                value: specialties,
+              }))}
+              style={pickerSelectStyles}
+              placeholder={{ label: "Select", value: null }}
+            />
 
-      <Text style={styles.label}>Type of Car</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Car Brand"
-        value={carBrand}
-        onChangeText={setCarBrand}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Car Model"
-        value={carModel}
-        onChangeText={setCarModel}
-      />
+            <Text style={styles.label}>Type of Car</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Car Brand"
+             value={carBrand}
+              onChangeText={setCarBrand}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Car Model"
+              value={carModel}
+              onChangeText={setCarModel}
+            />
 
-      <TextInput
-        style={[styles.input, styles.textArea]}
-        placeholder="Please Add Description..."
-        value={description}
-        onChangeText={setDescription}
-        multiline={true}
-      />
+        <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Please Add Description..."
+              value={description}
+              onChangeText={setDescription}
+              multiline={true}
+            />
 
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Submit Request</Text>
-      </TouchableOpacity>
-    </View>
+            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+              <Text style={styles.buttonText}>Submit Request</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "85%",
+    padding: 20,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+  },
   container: {
     flex: 1,
     padding: 40,

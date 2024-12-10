@@ -9,7 +9,7 @@ export default ({ config }) => ({
     googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
     apiUrl: process.env.API_URL,
     eas: {
-      projectId: "db9cfc11-301f-4f40-b895-62c634e15c51",
+      projectId: "079529e4-c6bd-4877-b82d-b97d4f75461d",
     },
   },
 });

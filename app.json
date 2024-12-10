@@ -11,14 +11,13 @@
       ],
       [
         "expo-location",
-
         {
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
       ]
     ],
     "name": "Carmedic-app",
-    "slug": "carmedic-app",
+    "slug": "carmedic",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -48,6 +47,6 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "owner": "carmedic"
+    "owner": "pabzki1221"
   }
 }

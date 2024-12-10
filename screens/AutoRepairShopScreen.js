@@ -5,9 +5,6 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  ScrollView,
-  Modal,
-  SafeAreaView,
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -36,12 +33,14 @@ const haversineDistance = (lat1, lon1, lat2, lon2) => {
 const AutoRepairShopsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [isRequestFormVisible, setRequestFormVisible] = useState(false);
   const shop = route.params.item;
+
   // Getting user's current location from Redux
   const { latitude, longitude } = useSelector(
     (state) => state.userLocation.currentLocation
   );
+
   const handleOpenRequestModal = () => {
     const distance = haversineDistance(
       latitude,
@@ -49,41 +48,37 @@ const AutoRepairShopsScreen = () => {
       shop.latitude,
       shop.longitude
     );
+
     if (distance > 10) {
       // Trigger alert if the distance is more than 10 km
       Alert.alert(
         "Shop may be too far",
-        `The shop is ${distance.toFixed(
-          2
-        )} km away. They may likely decline your request.`,
+        `The shop is ${distance.toFixed(2)} km away. They may likely decline your request.`,
         [
           {
             text: "Cancel",
             style: "cancel",
-            onPress: handleCloseRequestModal,
+            onPress: () => handleCloseRequestForm(),
           },
           {
             text: "Proceed",
-            onPress: () => setModalVisible(true), // Show modal if user proceeds
+            onPress: () => setRequestFormVisible(true), // Open the modal
           },
         ]
       );
     } else {
-      setModalVisible(true); // Directly open modal if within 10 km
+      setRequestFormVisible(true); // Directly open modal if within 10 km
     }
   };
 
-  const handleCloseRequestModal = () => {
-    setModalVisible(false);
+  const handleCloseRequestForm = () => {
+    setRequestFormVisible(false);
   };
-
-  useEffect(() => {
-    console.log(route.params);
-  });
 
   const handleChatPress = () => {
     navigation.navigate("Chat Screen", { recieverId: shop.id });
   };
+
   const [isReviewModalVisible, setReviewModalVisible] = useState(false);
 
   const handleOpenReviewModal = () => {
@@ -93,6 +88,7 @@ const AutoRepairShopsScreen = () => {
   const handleCloseReviewModal = () => {
     setReviewModalVisible(false);
   };
+
   return (
     <View style={styles.container}>
       <AppBar />
@@ -117,16 +113,17 @@ const AutoRepairShopsScreen = () => {
             {/* Shop Ratings Section */}
             <View style={styles.ratingsContainer}>
               <Text style={styles.shopRatings}>
-               Ratings: {shop.averageRating ? shop.averageRating : "0 ratings"}
+                Ratings: {shop.averageRating ? shop.averageRating : "0 ratings"}
               </Text>
             </View>
           </View>
         </View>
+
         {/* Services Heading Section */}
         <View style={styles.servicesContainer}>
-          <Text style={styles.servicesHeading}>Services</Text>
+          <Text style ={styles.servicesHeading}>Services</Text>
         </View>
-  
+
         {/* Shop Specialties Section */}
         <View style={styles.specialtiesContainer}>
           {shop.specialties && shop.specialties.length > 0 ? (
@@ -155,7 +152,6 @@ const AutoRepairShopsScreen = () => {
           <Text style={styles.hoursText}>8 AM - 6 PM</Text>
         </View>
 
-
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.chatButton} onPress={handleChatPress}>
             <Text style={styles.chatButtonText}>Chat</Text>
@@ -166,28 +162,24 @@ const AutoRepairShopsScreen = () => {
           >
             <Text style={styles.requestButtonText}>Request</Text>
           </TouchableOpacity>
-  
-          <Modal
-            visible={isModalVisible}
-            onBackdropPress={handleCloseRequestModal}
-            transparent={true}
-          >
-            <View style={styles.modalBackground}>
-              <View style={styles.modalContent}>
-                <ScrollView>
-                  <RequestForm shop={shop} onClose={handleCloseRequestModal} />
-                </ScrollView>
-              </View>
-            </View>
-          </Modal>
         </View>
+
+        {/* Request Form */}
+        {isRequestFormVisible && (
+          <RequestForm
+            shop={shop}
+            onClose={handleCloseRequestForm}
+            visible={isRequestFormVisible}
+          />
+        )}
+
         <TouchableOpacity
           style={styles.reviewButton}
           onPress={handleOpenReviewModal}
         >
           <Text style={styles.reviewButtonText}>Leave a Review</Text>
         </TouchableOpacity>
-  
+
         {/* Review Modal */}
         <ReviewModal
           visible={isReviewModalVisible}
@@ -198,6 +190,7 @@ const AutoRepairShopsScreen = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -330,7 +323,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
-    overflow: "scroll",
+    overflow: "hidden",
   },
   shopRatings: {
     fontSize: 14,

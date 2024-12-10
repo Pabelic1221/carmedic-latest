@@ -230,15 +230,15 @@ export default function Chat() {
   return (
     <SafeAreaView style={styles.container}>
       <SafeAreaView style={{ zIndex: 999, backgroundColor: "#000" }}>
-        {currentUser.role === "Shop" ? <ShopAppBar /> : <AppBar />}
+        {currentUser .role === "Shop" ? <ShopAppBar /> : <AppBar />}
       </SafeAreaView>
-      <View style={{ flex: 1, paddingTop: 60 }}>
-        {" "}
-        {/* Adjust paddingTop based on your AppBar height */}
-        <View style={styles.header}>
-          <Text style={styles.shopName}>{shopName}</Text>
-          <View style={styles.statusIcon}>{getStatusIcon()}</View>
-        </View>
+      <View style={{ flex: 1, paddingTop: 10 }}>
+      <View style={styles.header}>
+       <Text style={styles.shopName}>
+          {shopName} {getStatusIcon()} {/* Inline rendering */}
+        </Text>
+      </View>
+
         <GiftedChat
           messages={messages}
           onSend={(newMessages) => onSend(newMessages)}
