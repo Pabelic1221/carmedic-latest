@@ -10,13 +10,12 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { auth, db } from "../firebase"; // Ensure you have db imported
 import { signOut } from "firebase/auth";
-import { actions, resetUser } from "../redux/user/user";
+import { resetUser } from "../redux/user/user";
 import { resetRequests } from "../redux/requests/requests";
 import { actions as userLocationActions } from "../redux/map/userLocation";
 import { resetShops, actions as shopsActions } from "../redux/shops/shops";
 
 import { useDispatch, useSelector } from "react-redux";
-import { doc, getDoc } from "firebase/firestore"; // Import Firestore methods
 import { ActivityIndicator } from "react-native-paper";
 
 const DrawerContent = memo((props) => {
@@ -38,16 +37,20 @@ const DrawerContent = memo((props) => {
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {
-        dispatch(resetUser());
+        console.log("User  signed out successfully.");
+        dispatch(resetUser ());
         dispatch(resetRequests());
         dispatch(userLocationActions.resetLocation());
-        dispatch(resetShops()); // Reset user state in Redux
+        dispatch(resetShops());
         navigation.reset({
           index: 0,
           routes: [{ name: "Login" }],
         });
       })
-      .catch((error) => alert(error.message));
+      .catch((error) => {
+        console.error("Sign out error:", error);
+        alert(error.message);
+      });
   };
 
   return (

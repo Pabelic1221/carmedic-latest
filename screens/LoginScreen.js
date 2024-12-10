@@ -62,16 +62,16 @@ const LoginScreen = () => {
         password
       );
       const user = userCredentials.user;
-      console.log("User logged in");
+      console.log("User  logged in");
       if (user.emailVerified) {
-        dispatch(fetchCurrentUser());
+        dispatch(fetchCurrentUser ());
         dispatch(updateUserStatus({ userId: user.uid, status: "online" }));
         console.log("Logged in with:", user.email);
-
+  
         // Set navigating to true before navigating
         setNavigating(true);
-
-        if (currentUser?.email) {
+  
+        if (currentUser ?.email) {
           setTimeout(() => {
             navigation.navigate("Main");
           }, 1000);
@@ -86,7 +86,13 @@ const LoginScreen = () => {
       }
     } catch (error) {
       console.error("Login error:", error.message);
-      alert(error.message);
+      if (error.code === 'auth/wrong-password') {
+        Alert.alert("Incorrect Password");
+      } else if (error.code === 'auth/user-not-found') {
+        Alert.alert("No user found with this email.");
+      } else {
+        Alert.alert("Login Error", error.message);
+      }
     } finally {
       setLoading(false); // Hide loading after login process
     }
