@@ -6,9 +6,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  Modal
+  Modal,
+  ActivityIndicator,
 } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
 import RNPickerSelect from "react-native-picker-select";
 import { auth, db } from "../../firebase";
 import { collection, addDoc } from "firebase/firestore";
@@ -24,31 +24,37 @@ export default function RequestForm({ visible, shop, onClose }) {
     (state) => state.userLocation.currentLocation
   );
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // New loading state
 
+  // Monitor authentication state
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        setIsAuthenticated(true);
-      } else {
-        console.error("User not authenticated");
-        setIsAuthenticated(false);
-      }
+      setIsAuthenticated(!!user); // Set true if user exists, otherwise false
+      setIsLoading(false); // Authentication state determined
     });
 
-    return () => unsubscribe();
+    return () => unsubscribe(); // Cleanup on unmount
   }, []);
 
   const handleSubmit = async () => {
-    const userId = auth.currentUser?.uid;
-
+    const userId = auth.currentUser ?.uid;
+  
     if (!userId) {
-      Alert.alert("User is not authenticated. Please log in first.");
+      Alert.alert("Authentication Required", "Please log in to submit a request.");
       return;
     }
-
+  
+    // Input validation
+    if (!problem || !carBrand || !carModel || !description) {
+      Alert.alert("Validation Error", "Please fill in all fields.");
+      return;
+    }
+  
+    setIsLoading(true); // Start loading
+  
     try {
       const requestsRef = collection(db, "requests");
-
+  
       await addDoc(requestsRef, {
         userId,
         storeId: shop.id,
@@ -61,76 +67,86 @@ export default function RequestForm({ visible, shop, onClose }) {
         latitude,
         timestamp: new Date().toISOString(),
       });
-
-      Alert.alert("Request submitted successfully!");
+  
+      Alert.alert("Request Submitted", "Your request has been submitted successfully!");
       onClose();
     } catch (error) {
-      Alert.alert("Error submitting request: ", error.message);
+      Alert.alert("Submission Error", error.message);
+    } finally {
+      setIsLoading(false); // Stop loading
     }
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.centeredContainer}>
+        <ActivityIndicator size="large" color="#000" />
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
-      <View style={styles.container}>
+      <View style={styles.centeredContainer}>
         <Text style={styles.errorText}>Please log in to submit a request.</Text>
         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <Icon name="close-circle" size={24} color="#000" />
+          <Ionicons name="close-circle" size={35} color="#000" />
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <Modal visible={visible}
+    <Modal
+      visible={visible}
       animationType="slide"
       transparent={true}
       onRequestClose={onClose}
     >
       <View style={styles.modalBackground}>
         <View style={styles.modalContent}>
-          <View style={styles.modalContainer}>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Ionicons name="close-circle" size={35} color="#000" />
-            </TouchableOpacity>
-            <Text style={styles.title}>Request</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Ionicons name="close-circle" size={35} color="#000" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Request</Text>
 
-            <Text style={styles.label}>Select Service Request</Text>
-            <RNPickerSelect
-              onValueChange={(value) => setProblem(value)}
-              items={shop.specialties.map((specialties) => ({
-                label: specialties,
-                value: specialties,
-              }))}
-              style={pickerSelectStyles}
-              placeholder={{ label: "Select", value: null }}
-            />
+          <Text style={styles.label}>Select Service Request</Text>
+          <RNPickerSelect
+            onValueChange={(value) => setProblem(value)}
+            items={shop.specialties.map((specialty) => ({
+              label: specialty,
+              value: specialty,
+            }))}
+            style={pickerSelectStyles}
+            placeholder={{ label: "Select", value: null }}
+          />
 
-            <Text style={styles.label}>Type of Car</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Car Brand"
-             value={carBrand}
-              onChangeText={setCarBrand}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Car Model"
-              value={carModel}
-              onChangeText={setCarModel}
-            />
+          <Text style={styles.label}>Type of Car</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Car Brand"
+            value={carBrand}
+            onChangeText={setCarBrand}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Car Model"
+            value={carModel}
+            onChangeText={setCarModel}
+          />
 
-        <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Please Add Description..."
-              value={description}
-              onChangeText={setDescription}
-              multiline={true}
-            />
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            placeholder="Please Add Description..."
+            value={description}
+            onChangeText={setDescription}
+            multiline={true}
+          />
 
-            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-              <Text style={styles.buttonText}>Submit Request</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>Submit Request</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </Modal>
@@ -150,10 +166,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 10,
   },
-  container: {
+  centeredContainer: {
     flex: 1,
-    padding: 40,
-    paddingTop: 10,
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#fff",
   },
   closeButton: {
@@ -199,7 +215,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "red",
     textAlign: "center",
-    marginTop: 50,
+    marginBottom: 20,
   },
 });
 
@@ -216,10 +232,10 @@ const pickerSelectStyles = StyleSheet.create({
   inputAndroid: {
     height: 50,
     borderColor: "#ccc",
-    borderWidth: 5,
+    borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    marginBottom: 20,
+    marginBottom: 15,
     color: "#000",
   },
 });
