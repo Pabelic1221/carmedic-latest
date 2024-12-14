@@ -23,40 +23,26 @@ export default function RequestForm({ visible, shop, onClose }) {
   const { longitude, latitude } = useSelector(
     (state) => state.userLocation.currentLocation
   );
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // New loading state
-
-  // Monitor authentication state
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setIsAuthenticated(!!user); // Set true if user exists, otherwise false
-      setIsLoading(false); // Authentication state determined
-    });
-
-    return () => unsubscribe(); // Cleanup on unmount
-  }, []);
 
   const handleSubmit = async () => {
-    const userId = auth.currentUser ?.uid;
-  
-    if (!userId) {
+    // Check if user is authenticated
+    const user = auth.currentUser;
+    if (!user) {
       Alert.alert("Authentication Required", "Please log in to submit a request.");
       return;
     }
-  
+
     // Input validation
     if (!problem || !carBrand || !carModel || !description) {
       Alert.alert("Validation Error", "Please fill in all fields.");
       return;
     }
-  
-    setIsLoading(true); // Start loading
-  
+
     try {
       const requestsRef = collection(db, "requests");
-  
+
       await addDoc(requestsRef, {
-        userId,
+        userId: user.uid,
         storeId: shop.id,
         specificProblem: problem,
         carBrand,
@@ -67,35 +53,13 @@ export default function RequestForm({ visible, shop, onClose }) {
         latitude,
         timestamp: new Date().toISOString(),
       });
-  
+
       Alert.alert("Request Submitted", "Your request has been submitted successfully!");
       onClose();
     } catch (error) {
       Alert.alert("Submission Error", error.message);
-    } finally {
-      setIsLoading(false); // Stop loading
     }
   };
-
-  if (isLoading) {
-    return (
-      <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color="#000" />
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <View style={styles.centeredContainer}>
-        <Text style={styles.errorText}>Please log in to submit a request.</Text>
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <Ionicons name="close-circle" size={35} color="#000" />
-        </TouchableOpacity>
-      </View>
-    );
-  }
 
   return (
     <Modal
@@ -170,7 +134,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
   },
   closeButton: {
     position: "absolute",
@@ -210,12 +173,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
-  },
-  errorText: {
-    fontSize: 18,
-    color: "red",
-    textAlign: "center",
-    marginBottom: 20,
   },
 });
 

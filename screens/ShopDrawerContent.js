@@ -115,7 +115,7 @@ const ShopDrawerContent = memo((props) => {
 });
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 30,
     backgroundColor: "#fff",
     justifyContent: "center",
   },
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   profileImage: {
-    marginTop: 50,
+    marginTop: 30,
     width: 150,
     height: 150,
     borderRadius: 100,
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   drawerItem: {
-    paddingVertical: 15,
+    paddingVertical: 10,
     alignItems: "flex-start",
   },
   drawerItemText: {

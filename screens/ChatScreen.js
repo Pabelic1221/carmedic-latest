@@ -35,31 +35,32 @@ export default function Chat() {
   };
 
   // Fetch receiver's name and status
+  // Fetch receiver's name and status
   useEffect(() => {
-    console.log(receiverId);
+    console.log("Receiver ID:", receiverId); // Log the receiverId
     if (!receiverId) return;
 
     const recieverRef =
-      currentUser?.role === "Shop"
+      currentUser ?.role === "Shop"
         ? doc(db, "users", receiverId)
         : doc(db, "shops", receiverId);
 
-    const unsubscribe = onSnapshot(recieverRef, (docSnap) => {
-      if (docSnap.exists()) {
+   const unsubscribe = onSnapshot(recieverRef, (docSnap) => {
+     if (docSnap.exists()) {
         const recieverData = docSnap.data();
         const name =
-          currentUser?.role === "Shop"
-            ? `${recieverData.firstName} ${recieverData.lastName}`
-            : recieverData.shopName;
-        setRecieverName(name);
-        setRecieverStatus(recieverData.status);
-      } else {
-        console.log("No such shop found!");
-      }
+         currentUser ?.role === "Shop"
+           ? `${recieverData.firstName} ${recieverData.lastName}`
+           : recieverData.shopName;
+       setRecieverName(name);
+       setRecieverStatus(recieverData.status);
+     } else {
+       console.log("No such shop found!");
+     }
     });
 
-    return () => unsubscribe();
-  }, [receiverId, currentUser?.role]);
+   return () => unsubscribe();
+  }, [receiverId, currentUser ?.role]);
 
   // Fetch initial messages and set up real-time updates
   useEffect(() => {
@@ -198,8 +199,6 @@ export default function Chat() {
     const color =
       shopStatus === "online"
         ? "green"
-        : shopStatus === "busy"
-        ? "red"
         : "gray";
     return <FontAwesome name="circle" size={12} color={color} />;
   };

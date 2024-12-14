@@ -30,7 +30,7 @@ const haversineDistance = (lat1, lon1, lat2, lon2) => {
   return R * c; // Distance in km
 };
 
-const AutoRepairShopsScreen = () => {
+const AutoRepairShopScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const [isRequestFormVisible, setRequestFormVisible] = useState(false);
@@ -76,7 +76,7 @@ const AutoRepairShopsScreen = () => {
   };
 
   const handleChatPress = () => {
-    navigation.navigate("Chat Screen", { recieverId: shop.id });
+    navigation.navigate("Chat Screen", { receiverId: shop.id });
   };
 
   const [isReviewModalVisible, setReviewModalVisible] = useState(false);
@@ -395,4 +395,4 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
 });
-export default AutoRepairShopsScreen;
+export default AutoRepairShopScreen;

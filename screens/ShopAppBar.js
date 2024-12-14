@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   container: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   scrollViewContent: {
     paddingTop: Platform.OS === "android" ? 75 : 100, // Add padding to avoid content overlap

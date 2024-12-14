@@ -43,29 +43,29 @@ const ChatList = () => {
     try {
       const chatList = [];
       const seenUserIds = new Set();
-
+  
       const messagesRef = collectionGroup(db, "messages");
       const allMessagesQuery = query(messagesRef, orderBy("createdAt", "desc"));
       const allMessagesSnapshot = await getDocs(allMessagesQuery);
-
+  
       for (const msgDoc of allMessagesSnapshot.docs) {
         const messageData = msgDoc.data();
         const senderId = messageData.user._id;
         const receiverId = msgDoc.ref.parent.parent.id;
-
+  
         if (senderId === userId || receiverId === userId) {
           const chatPartnerId = senderId === userId ? receiverId : senderId;
-
+  
           if (seenUserIds.has(chatPartnerId)) continue;
           seenUserIds.add(chatPartnerId);
-
+  
           const partnerRef =
-            currentUser.role === "Shop"
+            currentUser .role === "Shop"
               ? doc(db, "users", chatPartnerId)
               : doc(db, "shops", chatPartnerId);
-
+  
           const partnerSnap = await getDoc(partnerRef);
-
+  
           if (partnerSnap.exists()) {
             const partnerData = partnerSnap.data();
             chatList.push({
@@ -73,7 +73,7 @@ const ChatList = () => {
               userName: partnerData.firstName
                 ? `${partnerData.firstName} ${partnerData.lastName}`
                 : partnerData.shopName,
-              userPhotoUrl: partnerData.photoUrl || "",
+              userPhotoUrl: partnerData.photoUrl || "https://via.placeholder.com/50", // Use Cloudinary URL
               latestMessage:
                 senderId === userId
                   ? `You: ${messageData.text}`
@@ -83,13 +83,14 @@ const ChatList = () => {
           }
         }
       }
-
-      chatList.sort(
-        (a, b) =>
-          b.latestMessageTimestamp.toMillis() -
-          a.latestMessageTimestamp.toMillis()
-      );
-
+  
+      chatList.sort((a, b) => {
+        const aTimestamp = a.latestMessageTimestamp?.toMillis() || 0;
+        const bTimestamp = b.latestMessageTimestamp?.toMillis() || 0;
+        return bTimestamp - aTimestamp;
+      });
+  
+      console.log("Chat List:", chatList); // Log the chat list
       setChats(chatList);
     } catch (error) {
       console.error("Error fetching chat data:", error);
@@ -105,7 +106,7 @@ const ChatList = () => {
       <View style={styles.chatItem}>
         <Image
           source={{
-            uri: item.profilePicUrl || "https://via.placeholder.com/50",
+            uri: item.userPhotoUrl || "https://via.placeholder.com/50", // Use Cloudinary URL
           }}
           style={styles.profileImage}
         />
