@@ -21,11 +21,11 @@ import UserProfile from "./screens/UserProfile";
 import ARSHomeScreen from "./screens/ARSHomeScreen";
 import ShopListScreen from "./screens/ShopListScreen";
 import OngoingRequestScreen from "./screens/OngoingRescueScreen";
+import UserRequestTrackingScreen from "./screens/UserRequestTrackingScreen";
 import Chat from "./screens/ChatScreen";
 import ChatList from "./components/chat/ChatList";
 import UserRequestLogScreen from "./screens/UserRequestLogScreen";
 import ShopProfile from "./screens/ShopProfile";
-import { fetchCurrentUser } from "./redux/user/userActions";
 
 const Drawer = createDrawerNavigator();
 
@@ -68,7 +68,7 @@ function DrawerNavigator() {
         );
       }}
       screenOptions={{
-        headerShown: false, // Hide headers for all drawer screens
+        headerShown: false,
         drawerType: "front",
         unmountOnBlur: true,
 
@@ -101,6 +101,7 @@ function DrawerNavigator() {
       <Drawer.Screen name="ShopProfile" component={ShopProfile} />
       <Drawer.Screen name="UserRequestLog" component={UserRequestLogScreen} />
       <Drawer.Screen name="OngoingRequest" component={OngoingRequestScreen} />
+      <Drawer.Screen name="UserRequestTracking" component={UserRequestTrackingScreen} />
     </Drawer.Navigator>
   );
 }

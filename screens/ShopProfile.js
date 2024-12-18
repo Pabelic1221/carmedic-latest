@@ -13,7 +13,6 @@ import {
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import MapView, { Marker } from "react-native-maps";
-import { MapComponent } from "../components/map/MapComponent";
 import { uploadImageToCloudinary } from "../helpers/cloudinary";
 import { getAddressFromCoordinates } from "../helpers/maps/getAddress";
 import { ActivityIndicator, Switch } from "react-native-paper";

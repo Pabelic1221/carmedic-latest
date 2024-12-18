@@ -22,11 +22,12 @@ import {
 import AppBar from "./AppBar";
 import { useNavigation } from "@react-navigation/native";
 import { setShopLocation } from "../redux/requests/requests";
+import UserRequestTrackingScreen from "./UserRequestTrackingScreen"; // Import the new screen
 
 const UserRequestLogScreen = () => {
   const [requests, setRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const currentUser = useSelector((state) => state.user.currentUser);
+  const currentUser  = useSelector((state) => state.user.currentUser );
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
@@ -52,10 +53,10 @@ const UserRequestLogScreen = () => {
   };
 
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser ) return;
 
     const requestsRef = collection(db, "requests");
-    const q = query(requestsRef, where("userId", "==", currentUser.id));
+    const q = query(requestsRef, where("userId", "==", currentUser .id));
 
     const unsubscribe = onSnapshot(q, async (querySnapshot) => {
       const fetchedRequests = [];
@@ -82,7 +83,7 @@ const UserRequestLogScreen = () => {
     });
 
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [currentUser ]);
 
   const renderRequestItem = ({ item }) => (
     <TouchableOpacity
@@ -93,7 +94,8 @@ const UserRequestLogScreen = () => {
           return;
         }
 
-        setSelectedRequest(item);
+        // Navigate to UserRequestTrackingScreen when the request is selected
+        navigation.navigate("UserRequestTracking", { request: item });
       }}
     >
       <Text style={styles.cardTitle}>{item.specificProblem} Request</Text>
@@ -136,7 +138,7 @@ const UserRequestLogScreen = () => {
                 <Text style={styles.modalText}>
                   Description: {selectedRequest.description}
                 </Text>
-                <Text style={styles.modalText}>
+                <Text style={styles .modalText}>
                   Specific Problem: {selectedRequest.specificProblem}
                 </Text>
                 <Text style={styles.modalText}>

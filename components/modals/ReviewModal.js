@@ -7,6 +7,7 @@ import {
   TextInput,
   StyleSheet,
   Alert,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { addDoc, collection } from "firebase/firestore";
@@ -30,7 +31,7 @@ const ReviewModal = ({ visible, onClose, shopId }) => {
     }
 
     try {
-      const userId = auth.currentUser?.uid;
+      const userId = auth.currentUser ?.uid;
       if (!userId) {
         Alert.alert(
           "Authentication Error",
@@ -67,53 +68,56 @@ const ReviewModal = ({ visible, onClose, shopId }) => {
 
   return (
     <Modal visible={visible} transparent animationType="slide">
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Rate and Review</Text>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.modalBackground}>
+          <TouchableWithoutFeedback>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Rate and Review</Text>
 
-          {/* Star Rating */}
-          <View style={styles.starContainer}>
-            {[...Array(5)].map((_, index) => (
+              {/* Star Rating */}
+              <View style={styles.starContainer}>
+                {[...Array(5)].map((_, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => handleStarPress(index)}
+                  >
+                    <Ionicons
+                      name={index < rating ? "star" : "star-outline"}
+                      size={32}
+                      color="#FFD700" // Gold color for stars
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Review Text Input */}
+              <TextInput
+                style={styles.reviewInput}
+                placeholder="Write an optional review..."
+                value={reviewText}
+                onChangeText={setReviewText}
+                multiline
+              />
+
+              {/* Submit Button */}
               <TouchableOpacity
-                key={index}
-                onPress={() => handleStarPress(index)}
+                style={styles.submitButton}
+                onPress={handleSubmitReview}
               >
-                <Ionicons
-                  name={index < rating ? "star" : "star-outline"}
-                  size={32}
-                  color="#FFD700" // Gold color for stars
-                />
+                <Text style={styles.submitButtonText}>Submit Review</Text>
               </TouchableOpacity>
-            ))}
-          </View>
 
-          {/* Review Text Input */}
-          <TextInput
-            style={styles.reviewInput}
-            placeholder="Write an optional review..."
-            value={reviewText}
-            onChangeText={setReviewText}
-            multiline
-          />
-
-          {/* Submit Button */}
-          <TouchableOpacity
-            style={styles.submitButton}
-            onPress={handleSubmitReview}
-          >
-            <Text style={styles.submitButtonText}>Submit Review</Text>
-          </TouchableOpacity>
-
-          {/* Close Button */}
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Text style={styles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
+              {/* Close Button */}
+              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
-
 const styles = StyleSheet.create({
   modalBackground: {
     flex: 1,

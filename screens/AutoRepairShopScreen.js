@@ -10,9 +10,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux"; // Assuming you're using Redux for user location
-import RequestForm from "../components/modals/RequestForm";
+import RequestForm from "../components/modals/RequestForm"; // Ensure this is the correct path
 import AppBar from "./AppBar";
 import ReviewModal from "../components/modals/ReviewModal";
+import * as Location from "expo-location"; // Import Location from expo-location
 
 // Haversine formula to calculate distance in kilometers between two coordinates
 const haversineDistance = (lat1, lon1, lat2, lon2) => {
@@ -34,17 +35,34 @@ const AutoRepairShopScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const [isRequestFormVisible, setRequestFormVisible] = useState(false);
-  const shop = route.params.item;
+  const [userLocation, setUserLocation] = useState(null); // State to hold user location
+  const shop = route.params.item; // Ensure this contains the shop object with id
 
-  // Getting user's current location from Redux
-  const { latitude, longitude } = useSelector(
-    (state) => state.userLocation.currentLocation
-  );
+  // Fetch user's current location when the component mounts
+  useEffect(() => {
+    const fetchUserLocation = async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Location permission not granted");
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      setUserLocation(location.coords); // Store the user's location
+    };
+
+    fetchUserLocation();
+  }, []);
 
   const handleOpenRequestModal = () => {
+    if (!userLocation) {
+      Alert.alert("User  location is not available");
+      return;
+    }
+
     const distance = haversineDistance(
-      latitude,
-      longitude,
+      userLocation.latitude,
+      userLocation.longitude,
       shop.latitude,
       shop.longitude
     );
@@ -121,7 +139,7 @@ const AutoRepairShopScreen = () => {
 
         {/* Services Heading Section */}
         <View style={styles.servicesContainer}>
-          <Text style ={styles.servicesHeading}>Services</Text>
+          <Text style={styles.servicesHeading}>Services</Text>
         </View>
 
         {/* Shop Specialties Section */}
@@ -169,7 +187,10 @@ const AutoRepairShopScreen = () => {
           <RequestForm
             shop={shop}
             onClose={handleCloseRequestForm}
-            visible={isRequestFormVisible}
+           visible={isRequestFormVisible}
+           shopId={shop.id} // Pass the shop ID to the RequestForm
+            latitude={userLocation?.latitude} // Pass user's latitude
+            longitude={userLocation?.longitude} // Pass user's longitude
           />
         )}
 
@@ -333,12 +354,12 @@ const styles = StyleSheet.create({
   servicesHeading: {
     fontSize: 25,
     fontWeight: "bold",
-    marginVertical: 5
+    marginVertical: 5,
   },
   contactHeading: {
     fontSize: 25,
     fontWeight: "bold",
-    marginVertical: 5
+    marginVertical: 5,
   },
   servicesContainer: {
     marginBottom: 2,
@@ -347,7 +368,7 @@ const styles = StyleSheet.create({
     color: "gray",
     marginTop: 0,
     fontSize: 15,
-    marginBottom: 10
+    marginBottom: 10,
   },
   noServicesText: {
     color: "red",
@@ -375,11 +396,11 @@ const styles = StyleSheet.create({
   },
   contactNumber: {
     color: "gray",
-    marginVertical: 2
+    marginVertical: 2,
   },
   contactEmail: {
     color: "gray",
-    marginVertical: 2
+    marginVertical: 2,
   },
   hoursContainer: {
     marginBottom: 20,
@@ -395,4 +416,5 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
 });
+
 export default AutoRepairShopScreen;

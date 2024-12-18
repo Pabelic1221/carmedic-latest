@@ -7,115 +7,109 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
-  ActivityIndicator,
 } from "react-native";
-import RNPickerSelect from "react-native-picker-select";
-import { auth, db } from "../../firebase";
+import { auth, db } from "../../firebase"; // Ensure Firebase is properly initialized
 import { collection, addDoc } from "firebase/firestore";
-import { useSelector } from "react-redux";
-import { Ionicons } from "@expo/vector-icons";
 
-export default function RequestForm({ visible, shop, onClose }) {
-  const [problem, setProblem] = useState("");
+const RequestForm = ({ visible, onClose, shopId, latitude, longitude }) => {
   const [carBrand, setCarBrand] = useState("");
   const [carModel, setCarModel] = useState("");
   const [description, setDescription] = useState("");
-  const { longitude, latitude } = useSelector(
-    (state) => state.userLocation.currentLocation
-  );
+  const [specificProblem, setSpecificProblem] = useState("");
+  const [state] = useState("pending"); // Default state
+  const [userId] = useState(auth.currentUser  ?.uid); // Get the current user's ID
+
+  // Log latitude and longitude when the component mounts or when props change
+  useEffect(() => {
+    console.log("Latitude:", latitude);
+    console.log("Longitude:", longitude);
+  }, [latitude, longitude]);
 
   const handleSubmit = async () => {
-    // Check if user is authenticated
-    const user = auth.currentUser;
-    if (!user) {
-      Alert.alert("Authentication Required", "Please log in to submit a request.");
+    // Validate input fields
+    if (!carBrand || !carModel || !description || !specificProblem) {
+      Alert.alert("Validation Error", "Please fill in all fields.");
       return;
     }
 
-    // Input validation
-    if (!problem || !carBrand || !carModel || !description) {
-      Alert.alert("Validation Error", "Please fill in all fields.");
+    // Check if latitude and longitude are defined
+    if (latitude === undefined || longitude === undefined) {
+      Alert.alert("Error", "Location data is missing.");
       return;
     }
 
     try {
       const requestsRef = collection(db, "requests");
-
       await addDoc(requestsRef, {
-        userId: user.uid,
-        storeId: shop.id,
-        specificProblem: problem,
         carBrand,
         carModel,
         description,
-        state: "pending",
-        longitude,
-        latitude,
+        specificProblem,
+        state,
+        latitude, // Use the passed latitude
+        longitude, // Use the passed longitude
+        storeId: shopId, // Pass the shop ID
         timestamp: new Date().toISOString(),
+        userId, // Pass the user ID
       });
 
       Alert.alert("Request Submitted", "Your request has been submitted successfully!");
-      onClose();
+      onClose(); // Close the modal after submission
     } catch (error) {
       Alert.alert("Submission Error", error.message);
     }
   };
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
       <View style={styles.modalBackground}>
         <View style={styles.modalContent}>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Ionicons name="close-circle" size={35} color="#000" />
-          </TouchableOpacity>
-          <Text style={styles.title}>Request</Text>
+          <Text style={styles.title}>Request Service</Text>
 
-          <Text style={styles.label}>Select Service Request</Text>
-          <RNPickerSelect
-            onValueChange={(value) => setProblem(value)}
-            items={shop.specialties.map((specialty) => ({
-              label: specialty,
-              value: specialty,
-            }))}
-            style={pickerSelectStyles}
-            placeholder={{ label: "Select", value: null }}
-          />
-
-          <Text style={styles.label}>Type of Car</Text>
+          <Text style={styles.label}>Car Brand</Text>
           <TextInput
             style={styles.input}
-            placeholder="Car Brand"
+            placeholder="Enter car brand"
             value={carBrand}
             onChangeText={setCarBrand}
           />
+
+          <Text style={styles.label}>Car Model</Text>
           <TextInput
             style={styles.input}
-            placeholder="Car Model"
+            placeholder="Enter car model"
             value={carModel}
             onChangeText={setCarModel}
           />
 
+          <Text style={styles.label}>Description</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Please Add Description..."
+            style={styles.input}
+            placeholder="Enter description"
             value={description}
             onChangeText={setDescription}
-            multiline={true}
+          />
+
+          <Text style={styles.label}>Specific Problem</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Describe the specific problem"
+            value={specificProblem}
+            onChangeText={setSpecificProblem}
           />
 
           <TouchableOpacity style={styles.button} onPress={handleSubmit}>
             <Text style={styles.buttonText}>Submit Request</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Text style={styles.closeButtonText}>Close</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </Modal>
   );
-}
+};
 
 const styles = StyleSheet.create({
   modalBackground: {
@@ -127,72 +121,47 @@ const styles = StyleSheet.create({
   modalContent: {
     width: "85%",
     padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor : "#fff",
     borderRadius: 10,
-  },
-  centeredContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  closeButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
-    textAlign: "center",
   },
   label: {
     fontSize: 16,
-    marginBottom: 8,
+    marginBottom: 5,
   },
   input: {
     height: 40,
-    borderColor: "#ccc",
+    borderColor: "gray",
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 5,
     paddingHorizontal: 10,
     marginBottom: 15,
   },
-  textArea: {
-    height: 100,
-    textAlignVertical: "top",
-  },
   button: {
-    backgroundColor: "#000",
+    backgroundColor: "black",
     padding: 15,
-    borderRadius: 8,
+    borderRadius: 5,
     alignItems: "center",
-    marginTop: 20,
+    marginBottom: 10,
   },
   buttonText: {
-    color: "#fff",
-    fontSize: 16,
+    color: "white",
+    fontWeight: "bold",
+  },
+  closeButton: {
+    backgroundColor: "gray",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  closeButtonText: {
+    color: "white",
     fontWeight: "bold",
   },
 });
 
-const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 15,
-    color: "#000",
-  },
-  inputAndroid: {
-    height: 50,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 15,
-    color: "#000",
-  },
-});
+export default RequestForm;

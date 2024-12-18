@@ -9,31 +9,27 @@ import {
   Image,
 } from "react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import MapView, { Marker, Polyline } from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import { useSelector, useDispatch } from "react-redux";
 import RequestTicket from "../components/modals/RequestTicket";
-import EndTicket from "../components/modals/endTicketModal";
 import ShopAppBar from "./ShopAppBar";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import axios from "axios";
-import { getAllRequests } from "../redux/requests/requestsActions";
 import { useNavigation } from "@react-navigation/native";
 import TicketListener from "../components/map/Shops/TicketListener";
-import { actions, setRequestLocation } from "../redux/requests/requests";
-import { PermissionsAndroid, Platform } from "react-native";
+import { setRequestLocation } from "../redux/requests/requests";
 import { fetchAllRequests } from "../redux/requests/requestsThunk";
 
 const ARSHomeScreen = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const mapRef = useRef(null); // Step 1: Create the mapRef
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isLoading, setLoading] = useState(null);
-
   const { requests, loading } = useSelector((state) => state.requests);
-
+  const currentUser  = useSelector((state) => state.user.currentUser );
   const location = useSelector((state) => state.userLocation.currentLocation);
+
+
   const userLocation = useMemo(() => location, [location]);
   const handleRequestPress = (request) => {
     setSelectedRequest(request);
@@ -47,9 +43,17 @@ const ARSHomeScreen = () => {
     dispatch(setRequestLocation(request));
     navigation.navigate("OngoingRequest", { request });
   };
+
   useEffect(() => {
-    dispatch(fetchAllRequests());
-  }, [dispatch]);
+    const fetchRequests = async () => {
+      if (currentUser  && requests.length === 1) { // Check if requests are empty
+        await dispatch(fetchAllRequests());
+      }
+    };
+
+    fetchRequests();
+  }, [currentUser , requests.length, dispatch]);
+
   useEffect(() => {
     setLoading(loading);
   }, [loading]);

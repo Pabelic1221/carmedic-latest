@@ -69,7 +69,7 @@ export default function RequestTicket({ request, onClose, onAcceptRequest }) {
 
           <Text style={styles.modalHeader}>Request Ticket</Text>
           <Text style={styles.label}>
-            Name: {request.firstname} {request.lastname}
+            Name: {request.firstName} {request.lastName}
           </Text>
           <Text style={styles.label}>
             Car: {request.carBrand} {request.carModel}

@@ -10,16 +10,15 @@ import { db } from "../../firebase";
 import { actions } from "./requests";
 import { auth } from "../../firebase"; // Ensure you're importing auth properly
 
-export const getAllRequests = () => {
+export const getAllRequests = (userId) => {
   return async (dispatch) => {
     try {
-      const currentUserId = auth.currentUser.uid; // Get the current user's ID
-      console.log("currentUser", auth.currentUser.uid);
+      console.log("currentUser ", userId);
       const requestsCollectionRef = collection(db, "requests");
       const requestsQuery = query(
         requestsCollectionRef,
         where("state", "in", ["pending", "accepted"]),
-        where("storeId", "==", currentUserId)
+        where("storeId", "==", userId) // Use the passed userId
       );
 
       const querySnapshot = await getDocs(requestsQuery);

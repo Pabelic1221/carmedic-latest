@@ -2,9 +2,11 @@ import React, { useEffect, useState, useRef, useMemo } from "react";
 import {
   SafeAreaView,
   Modal,
-  Button,
   StyleSheet,
   ActivityIndicator,
+  View,
+  Text,
+  TouchableOpacity,
 } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import * as Location from "expo-location";
@@ -18,7 +20,9 @@ import {
 import EndTicket from "../components/modals/endTicketModal";
 import { useNavigation } from "@react-navigation/native";
 import { db, auth } from "../firebase";
-import { doc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
+import { doc, setDoc, updateDoc } from "firebase/firestore";
+import Ionicons from "react-native-vector-icons/Ionicons";
+
 const getDistance = (coord1, coord2) => {
   const toRad = (value) => (value * Math.PI) / 180;
 
@@ -61,6 +65,7 @@ const fetchAndDispatchRoute = async (startCoords, endCoords, dispatch) => {
     console.error("Error fetching route:", error);
   }
 };
+
 const OngoingRequestScreen = ({ route }) => {
   const { request } = route.params;
   const dispatch = useDispatch();
@@ -78,7 +83,7 @@ const OngoingRequestScreen = ({ route }) => {
     (state) => state.requests.requestLocation
   );
   const shopLocation = useSelector((state) => state.requests.shopLocation);
-  const { currentUser } = useSelector((state) => state.user);
+  const { currentUser  } = useSelector((state) => state.user);
 
   const destination = useMemo(
     () =>
@@ -91,21 +96,7 @@ const OngoingRequestScreen = ({ route }) => {
   );
 
   const lastLocation = useRef(userLocation);
-  const fetchAndDispatchRoute = async (startCoords, endCoords, dispatch) => {
-    const url = constructRouteUrl(startCoords, endCoords);
-    try {
-      const response = await axios.get(url);
-      const route = response.data.routes[0].geometry.coordinates.map(
-        ([lon, lat]) => ({
-          latitude: lat,
-          longitude: lon,
-        })
-      );
-      dispatch(setRescueRoute(route));
-    } catch (error) {
-      console.error("Error fetching route:", error);
-    }
-  };
+
   // Load all necessary data asynchronously
   useEffect(() => {
     const initializeData = async () => {
@@ -131,13 +122,13 @@ const OngoingRequestScreen = ({ route }) => {
         }
 
         // Set Firestore data for shops
-        if (currentUser?.role === "Shop") {
+        if (currentUser ?.role === "Shop") {
           const rescueDoc = doc(db, "shopOnRescue", request.id);
           await setDoc(
             rescueDoc,
             {
               userId: request.userId,
-              storeId: auth.currentUser.uid,
+              storeId: auth.currentUser .uid,
               state: "ongoing",
               longitude,
               latitude,
@@ -158,7 +149,7 @@ const OngoingRequestScreen = ({ route }) => {
     dispatch,
     destination,
     rescueRoute.length,
-    currentUser?.role,
+    currentUser ?.role,
     request.id,
   ]);
 
@@ -181,7 +172,7 @@ const OngoingRequestScreen = ({ route }) => {
             if (distance > 100) {
               dispatch(actions.setCurrentLocation(newLocation));
 
-              if (currentUser?.role === "Shop") {
+              if (currentUser ?.role === "Shop") {
                 await updateDoc(doc(db, "shopOnRescue", request.id), {
                   latitude,
                   longitude,
@@ -189,7 +180,6 @@ const OngoingRequestScreen = ({ route }) => {
                 });
               }
 
-              f(newLocation, destination, dispatch);
               lastLocation.current = newLocation;
             }
           }
@@ -201,7 +191,7 @@ const OngoingRequestScreen = ({ route }) => {
 
     trackLocation();
     return () => locationSubscription?.remove();
-  }, [dispatch, destination, request.id, currentUser?.role]);
+  }, [dispatch, destination, request.id, currentUser ?.role]);
 
   const handleEndRequest = () => setModalVisible(true);
 
@@ -220,38 +210,55 @@ const OngoingRequestScreen = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.fab}>
+          <Ionicons name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Ongoing Request</Text>
+      </View>
       <MapView
-        style={styles.map}
-        initialRegion={{
-          latitude: userLocation.latitude,
-          longitude: userLocation.longitude,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        }}
-      >
-        {userLocation && (
+         style={styles.map}
+         initialRegion={{
+           latitude: parseFloat(userLocation.latitude), // Ensure this is a number
+           longitude: parseFloat(userLocation.longitude), // Ensure this is a number
+           latitudeDelta: 0.05,
+           longitudeDelta: 0.05,
+         }}
+        >
+         {userLocation && (
+        <Marker
+             coordinate={{
+               latitude: parseFloat(userLocation.latitude), // Convert to number
+               longitude: parseFloat(userLocation.longitude), // Convert to number
+             }}
+             title="Your Location"
+             pinColor="purple"
+           />
+         )}
+         {destination && (
           <Marker
-            coordinate={userLocation}
-            title="Your Location"
-            pinColor="blue"
-          />
-        )}
-        {destination && (
-          <Marker
-            coordinate={destination}
-            title={"Destination"}
-            pinColor="purple"
-          />
-        )}
-        {rescueRoute.length > 0 && (
-          <Polyline
-            coordinates={rescueRoute}
-            strokeWidth={4}
-            strokeColor="blue"
-          />
-        )}
-      </MapView>
-      <Button title="End Request" onPress={handleEndRequest} />
+             coordinate={{
+                latitude: parseFloat(destination.latitude), // Convert to number
+                longitude: parseFloat(destination.longitude), // Convert to number
+             }}
+              title={"Destination"}
+              pinColor="blue"
+            />
+         )}
+         {rescueRoute.length > 0 && (       
+           <Polyline
+             coordinates={rescueRoute.map(coord => ({
+               latitude: parseFloat(coord.latitude), // Ensure this is a number
+               longitude: parseFloat(coord.longitude), // Ensure this is a number
+             }))}
+             strokeWidth={4}
+             strokeColor="blue"
+            />
+          )}
+        </MapView>
+      <TouchableOpacity style={styles.fab} onPress={handleEndRequest}>
+        <Ionicons name="checkmark" size={24} color="#fff" />
+      </TouchableOpacity>
       <Modal
         visible={isModalVisible}
         transparent
@@ -271,6 +278,28 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#6200ee',
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 10,
+    alignItems: 'center' 
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#6200ee',
+    borderRadius: 30,
+    padding: 15,
+    elevation: 5,
   },
 });
 

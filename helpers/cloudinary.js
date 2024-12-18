@@ -5,9 +5,9 @@ import { Cloudinary } from "@cloudinary/url-gen";
  */
 const cloudinary = new Cloudinary({
   cloud: {
-    cloudName: "ds0znvcbn",
-    apiKey: 852191926298842,
-    apiSecret: "faRFvT87DEoSpRi9lQMG4w-nyFc",
+    cloudName: "dllshyemr",
+    apiKey: 458259167572791,
+    apiSecret: "ooS82BnxzjBn8lJ82vdFi-eNYJY",
   },
   url: {
     secure: true, // Enable HTTPS

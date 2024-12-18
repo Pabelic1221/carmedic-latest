@@ -12,24 +12,24 @@ import { getAuth } from "firebase/auth";
 import { db } from "../../../firebase"; // Import auth from firebase config
 import { actions, updateRequests } from "../../../redux/requests/requests";
 import PropTypes from "prop-types";
-import { getAllRequests } from "../../../redux/requests/requestsActions";
 import { fetchAllRequests } from "../../../redux/requests/requestsThunk";
 
 const TicketListener = ({ children }) => {
+  const dispatch = useDispatch();
   const requests = useSelector((state) => state.requests.requests);
+  const auth = getAuth();
+  const currentUser  = auth.currentUser ; // Get current authenticated user
+
   useEffect(() => {
     if (requests.length === 0) {
       dispatch(fetchAllRequests());
     }
-  });
-  const dispatch = useDispatch();
+  }, [requests.length, dispatch]);
 
   useEffect(() => {
-    const auth = getAuth();
-    const currentUser = auth.currentUser; // Get current authenticated user
+    if (!currentUser ) return; // Exit if no user is logged in
 
-    const storeId = currentUser?.uid; // Use the current user's UID as storeId
-
+    const storeId = currentUser .uid; // Use the current user's UID as storeId
     const colRef = collection(db, "requests");
 
     // Query to fetch only pending and accepted requests where userId is the current storeId
@@ -56,8 +56,7 @@ const TicketListener = ({ children }) => {
               const userDoc = await getDoc(userDocRef);
 
               if (userDoc.exists()) {
-                const { firstName, lastName, email, profilePicUrl } =
-                  userDoc.data();
+                const { firstName, lastName, email, profilePicUrl } = userDoc.data();
                 return {
                   ...request,
                   firstName,
@@ -83,7 +82,7 @@ const TicketListener = ({ children }) => {
     );
 
     return () => unsubscribe();
-  }, [dispatch]);
+  }, [dispatch, currentUser ]);
 
   return children;
 };
