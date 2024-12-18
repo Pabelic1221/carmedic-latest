@@ -7,6 +7,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
 } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import * as Location from "expo-location";
@@ -197,7 +198,14 @@ const OngoingRequestScreen = ({ route }) => {
 
   const handleCloseModal = () => {
     setModalVisible(false);
-    navigation.goBack();
+  };
+
+  const handleConfirmEndRequest = async () => {
+    // Logic to end the request (e.g., update Firestore)
+    // You can add your logic here to update the request state in Firestore
+
+    // After ending the request, navigate back or pop the screen
+    navigation.goBack(); // This will close the OngoingRequestScreen
   };
 
   if (isLoading) {
@@ -211,11 +219,11 @@ const OngoingRequestScreen = ({ route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.fab}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
         <Text style={styles.headerTitle}>Ongoing Request</Text>
       </View>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+       <Ionicons name="arrow-back" size={24} color="#fff" />
+      </TouchableOpacity>
       <MapView
          style={styles.map}
          initialRegion={{
@@ -260,12 +268,21 @@ const OngoingRequestScreen = ({ route }) => {
         <Ionicons name="checkmark" size={24} color="#fff" />
       </TouchableOpacity>
       <Modal
-        visible={isModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={handleCloseModal}
+       visible={isModalVisible}
+       transparent
+       animationType="slide"
+       onRequestClose={handleCloseModal} // This will close the modal
       >
-        <EndTicket request={request} onClose={handleCloseModal} />
+       <TouchableWithoutFeedback onPress={handleCloseModal}>
+          <View style={styles.modalBackground}>
+          <EndTicket
+            visible={isModalVisible}
+            request={request}
+            onClose={() => setModalVisible(false)}
+            navigation={navigation} // Pass the navigation prop here
+          />
+          </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </SafeAreaView>
   );
@@ -282,15 +299,26 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
-    backgroundColor: '#6200ee',
+    justifyContent: 'space-between',
+    padding: 15,
+    backgroundColor: '#000',
   },
   headerTitle: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-    marginLeft: 10,
-    alignItems: 'center' 
+    flex: 1,
+    textAlign: 'center',
+  },
+  backButton: {
+    backgroundColor: '#6200ee', // Optional: Add a background color for visibility
+    borderRadius: 30,
+    padding: 10,
+    elevation: 5,
+    position: 'absolute',
+    top: 70,
+    left: 10,
+    zIndex: 10,
   },
   fab: {
     position: 'absolute',

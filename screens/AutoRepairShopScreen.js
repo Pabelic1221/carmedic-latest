@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { useSelector } from "react-redux"; // Assuming you're using Redux for user location
 import RequestForm from "../components/modals/RequestForm"; // Ensure this is the correct path
 import AppBar from "./AppBar";
 import ReviewModal from "../components/modals/ReviewModal";
@@ -35,7 +34,8 @@ const AutoRepairShopScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const [isRequestFormVisible, setRequestFormVisible] = useState(false);
-  const [userLocation, setUserLocation] = useState(null); // State to hold user location
+  const [userLocation, setUserLocation] = useState(null);
+  const [userAddress, setUserAddress] = useState(""); // State to hold user location
   const shop = route.params.item; // Ensure this contains the shop object with id
 
   // Fetch user's current location when the component mounts
@@ -49,10 +49,28 @@ const AutoRepairShopScreen = () => {
 
       const location = await Location.getCurrentPositionAsync({});
       setUserLocation(location.coords); // Store the user's location
+      fetchUserAddress(location.coords.latitude, location.coords.longitude);
     };
 
     fetchUserLocation();
   }, []);
+
+  const fetchUserAddress = async (latitude, longitude) => {
+    try {
+      const response = await Location.reverseGeocodeAsync({ latitude, longitude });
+      console.log("Geocoding Response:", response); // Log the response
+  
+      if (response.length > 0) {
+        const address = `${response[0].name || ''}, ${response[0].city || ''}, ${response[0].region || ''}, ${response[0].country || ''}`;
+        setUserAddress(address); // Set the user address
+        console.log("User Address Set:", address); // Log the set address
+      } else {
+        console.log("No address found for the given coordinates.");
+      }
+    } catch (error) {
+      console.error("Error fetching user address:", error);
+    }
+  };
 
   const handleOpenRequestModal = () => {
     if (!userLocation) {
@@ -187,10 +205,12 @@ const AutoRepairShopScreen = () => {
           <RequestForm
             shop={shop}
             onClose={handleCloseRequestForm}
-           visible={isRequestFormVisible}
-           shopId={shop.id} // Pass the shop ID to the RequestForm
+            visible={isRequestFormVisible}
+            shopId={shop.id} // Pass the shop ID to the RequestForm
             latitude={userLocation?.latitude} // Pass user's latitude
             longitude={userLocation?.longitude} // Pass user's longitude
+            specialties={shop.specialties || []} 
+            userAddress={userAddress} 
           />
         )}
 

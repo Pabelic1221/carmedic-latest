@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert } from "react-native";
 import { db } from "../../firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-export default function EndTicket({ visible, request, onClose }) {
+export default function EndTicket({ visible, request, onClose, navigation }) {
   const [loading, setLoading] = useState(false);
 
   // Accept the request and update its state in Firestore
@@ -16,9 +16,12 @@ export default function EndTicket({ visible, request, onClose }) {
         state,
       });
       console.log("Request updated");
+      Alert.alert("Success", "The ticket session has been ended.");
       onClose(); // Close the modal
+      navigation.goBack(); // Navigate back to the previous screen (OngoingRescueScreen)
     } catch (error) {
       console.error("Error updating request: ", error);
+      Alert.alert("Error", "Failed to update the request.");
     } finally {
       setLoading(false);
     }

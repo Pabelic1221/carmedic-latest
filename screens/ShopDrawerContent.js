@@ -43,13 +43,20 @@ const ShopDrawerContent = memo((props) => {
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {
-        dispatch(resetUser());
+        console.log("User  signed out successfully.");
+        dispatch(resetUser ());
         dispatch(resetRequests());
         dispatch(userLocationActions.resetLocation());
         dispatch(resetShops());
-        navigation.replace("Login");
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Login" }], // Ensure this matches your login screen name
+        });
       })
-      .catch((error) => alert(error.message));
+      .catch((error) => {
+        console.error("Sign out error:", error);
+        alert(error.message);
+      });
   };
   if (isLoading) {
     return (

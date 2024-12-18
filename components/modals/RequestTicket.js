@@ -16,8 +16,8 @@ export default function RequestTicket({ request, onClose, onAcceptRequest }) {
       console.log("Request accepted");
 
       // Call the function to fetch route coordinates
-      onAcceptRequest(request); // Pass the request to the parent function
-      onClose(); // Close the modal
+      onAcceptRequest(request);
+      onClose();
     } catch (error) {
       console.error(`Error accepting request: ${error}`);
     } finally {
@@ -74,7 +74,9 @@ export default function RequestTicket({ request, onClose, onAcceptRequest }) {
           <Text style={styles.label}>
             Car: {request.carBrand} {request.carModel}
           </Text>
-          <Text style={styles.label}>Concern: {request.specificProblem}</Text>
+          <Text style={styles.label}>Concern: {request.selectedSpecialty}</Text>
+          <Text style={styles.label}>Description: {request.description}</Text>
+          <Text style={styles.label}>Address: {request.address}</Text>
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity

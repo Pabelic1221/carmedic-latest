@@ -22,7 +22,6 @@ import {
 import AppBar from "./AppBar";
 import { useNavigation } from "@react-navigation/native";
 import { setShopLocation } from "../redux/requests/requests";
-import UserRequestTrackingScreen from "./UserRequestTrackingScreen"; // Import the new screen
 
 const UserRequestLogScreen = () => {
   const [requests, setRequests] = useState([]);
@@ -40,7 +39,7 @@ const UserRequestLogScreen = () => {
         const shopData = docSnapshot.data();
         if (shopData.state === "ongoing") {
           dispatch(setShopLocation(shopData));
-          navigation.navigate("OngoingRequest", { request: item });
+          navigation.navigate("UserRequestTracking", { request: item });
         } else {
           console.log("The shop rescue is not ongoing.");
         }
@@ -53,10 +52,17 @@ const UserRequestLogScreen = () => {
   };
 
   useEffect(() => {
-    if (!currentUser ) return;
+    if (!currentUser ) {
+      console.log("No current user found.");
+      return;
+    }
 
     const requestsRef = collection(db, "requests");
-    const q = query(requestsRef, where("userId", "==", currentUser .id));
+    const q = query(
+      requestsRef,
+      where("userId", "==", currentUser .id),
+      where("state", "in", ["accepted", "ongoing", "ended", "declined"]) // Include all desired states
+    );
 
     const unsubscribe = onSnapshot(q, async (querySnapshot) => {
       const fetchedRequests = [];
@@ -77,13 +83,28 @@ const UserRequestLogScreen = () => {
         });
       }
 
-      fetchedRequests.sort((a, b) => b.timestamp - a.timestamp);
-
       setRequests(fetchedRequests);
+      console.log("Fetched requests:", fetchedRequests); // Debugging line
+    }, (error) => {
+      console.error("Error fetching requests:", error); // Catch any errors
     });
 
     return () => unsubscribe();
   }, [currentUser ]);
+
+  // Separate requests by state
+  const acceptedRequests = requests.filter(req => req.state === "accepted").sort((a, b) => b.timestamp - a.timestamp);
+  const ongoingRequests = requests.filter(req => req.state === "ongoing").sort((a, b) => b.timestamp - a.timestamp);
+  const endedRequests = requests.filter(req => req.state === "ended").sort((a, b) => b.timestamp - a.timestamp);
+  const declinedRequests = requests.filter(req => req.state === "declined").sort((a, b) => b.timestamp - a.timestamp);
+
+  // Combine all requests in the desired order
+  const sortedRequests = [
+    ...acceptedRequests,
+    ...ongoingRequests,
+    ...endedRequests,
+    ...declinedRequests,
+  ];
 
   const renderRequestItem = ({ item }) => (
     <TouchableOpacity
@@ -93,13 +114,13 @@ const UserRequestLogScreen = () => {
           await handleAcceptedRequest(item);
           return;
         }
-
-        // Navigate to UserRequestTrackingScreen when the request is selected
-        navigation.navigate("UserRequestTracking", { request: item });
+  
+        navigation.navigate("User RequestTracking", { request: item });
       }}
     >
       <Text style={styles.cardTitle}>{item.specificProblem} Request</Text>
       <Text style={styles.cardSubtitle}>Shop: {item.shopName}</Text>
+      <Text style={styles.cardStatus}>Status: <Text style={styles.boldText}>{item.state}</Text></Text> {/* Added status here */}
       <Text style={styles.cardDate}>
         {new Date(item.timestamp).toLocaleDateString()}{" "}
         {new Date(item.timestamp).toLocaleTimeString()}
@@ -111,7 +132,7 @@ const UserRequestLogScreen = () => {
     <SafeAreaView style={styles.container}>
       <AppBar />
       <FlatList
-        data={requests}
+        data={sortedRequests}
         keyExtractor={(item) => item.id}
         renderItem={renderRequestItem}
         ListEmptyComponent={
@@ -138,7 +159,7 @@ const UserRequestLogScreen = () => {
                 <Text style={styles.modalText}>
                   Description: {selectedRequest.description}
                 </Text>
-                <Text style={styles .modalText}>
+                <Text style={styles.modalText}>
                   Specific Problem: {selectedRequest.specificProblem}
                 </Text>
                 <Text style={styles.modalText}>
@@ -199,6 +220,11 @@ const styles = StyleSheet.create({
     color: "#888",
     marginTop: 8,
   },
+  cardStatus: {
+    fontSize: 14,
+    color: "#555",
+    marginTop: 4, // Add some margin for spacing
+  },
   emptyMessage: {
     textAlign: "center",
     fontSize: 16,
@@ -244,6 +270,10 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "bold",
   },
+  boldText: {
+    fontWeight: "bold", // This will make the text bold
+  },
 });
+
 
 export default UserRequestLogScreen;

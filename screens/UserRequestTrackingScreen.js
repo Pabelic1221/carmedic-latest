@@ -1,26 +1,55 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import { useSelector } from "react-redux";
 import { db } from "../firebase"; // Assuming Firebase is used for data storage
 import { doc, onSnapshot } from "firebase/firestore";
+import Ionicons from "react-native-vector-icons/Ionicons"; // Import Ionicons for the back button
+import axios from "axios"; // Import axios for fetching route data
 
-const UserRequestTrackingScreen = ({ route }) => {
+const UserRequestTrackingScreen = ({ route, navigation }) => {
   const { request } = route.params; // Get the request details passed from the previous screen
   const userLocation = useSelector((state) => state.userLocation.currentLocation);
   const [shopLocation, setShopLocation] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [routeCoordinates, setRouteCoordinates] = useState([]); // State for route coordinates
 
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, "shopOnRescue", request.id), (doc) => {
       if (doc.exists()) {
-        setShopLocation(doc.data());
+        const data = doc.data();
+        setShopLocation(data);
+        fetchRoute(userLocation, data); // Fetch the route when shop location is available
         setIsLoading(false);
+      } else {
+        // Handle the case where the document does not exist
+        setIsLoading(false);
+        Alert.alert("Error", "Shop location not found.");
       }
+    }, (error) => {
+      // Handle errors in fetching data
+      setIsLoading(false);
+      Alert.alert("Error", "Failed to fetch shop location.");
     });
-
+  
     return () => unsubscribe();
-  }, [request.id]);
+  }, [request.id, userLocation]);
+
+  const fetchRoute = async (startCoords, endCoords) => {
+    const url = `https://router.project-osrm.org/route/v1/driving/${startCoords.longitude},${startCoords.latitude};${endCoords.longitude},${endCoords.latitude}?overview=full&geometries=geojson`;
+    try {
+      const response = await axios.get(url);
+      const route = response.data.routes[0].geometry.coordinates.map(
+        ([lon, lat]) => ({
+          latitude: lat,
+          longitude: lon,
+        })
+      );
+      setRouteCoordinates(route);
+    } catch (error) {
+      console.error("Error fetching route:", error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -32,6 +61,9 @@ const UserRequestTrackingScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color="#000" />
+      </TouchableOpacity>
       <MapView
         style={styles.map}
         initialRegion={{
@@ -54,19 +86,16 @@ const UserRequestTrackingScreen = ({ route }) => {
             pinColor="blue"
           />
         )}
-        {shopLocation && (
+        {routeCoordinates.length > 0 && (
           <Polyline
-            coordinates={[
-              userLocation,
-              { latitude: shopLocation.latitude, longitude: shopLocation.longitude },
-            ]}
+            coordinates={routeCoordinates}
             strokeWidth={4}
             strokeColor="blue"
           />
         )}
       </MapView>
       <Text style={styles.requestDetails}>
-        Request ID: {request.id} - Status: {request.state}
+       Request ID: {request.id} - <Text style={styles.boldText}>{request.state}</Text>
       </Text>
     </View>
   );
@@ -89,6 +118,18 @@ const styles = StyleSheet.create({
     right: 20,
     borderRadius: 10,
     elevation: 5,
+  },
+  backButton: {
+    position: "absolute",
+    top: 40,
+    left: 20,
+    zIndex: 1,
+    backgroundColor: "white ",
+    borderRadius: 20,
+    padding: 10,
+  },
+  boldText: {
+    fontWeight: "bold",
   },
 });
 

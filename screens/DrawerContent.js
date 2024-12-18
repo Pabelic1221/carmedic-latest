@@ -44,7 +44,7 @@ const DrawerContent = memo((props) => {
         dispatch(resetShops());
         navigation.reset({
           index: 0,
-          routes: [{ name: "Login" }],
+          routes: [{ name: "Login" }], // Ensure this matches your login screen name
         });
       })
       .catch((error) => {
