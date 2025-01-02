@@ -289,6 +289,12 @@ const styles = StyleSheet.create({
   picker: {
     height: 50,
     width: "100%",
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    backgroundColor: "#fff",
+    marginHorizontal: 10,
   },
 });
 
