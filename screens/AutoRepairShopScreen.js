@@ -74,7 +74,7 @@ const AutoRepairShopScreen = () => {
 
   const handleOpenRequestModal = () => {
     if (!userLocation) {
-      Alert.alert("User  location is not available");
+      Alert.alert("User location is not available");
       return;
     }
 

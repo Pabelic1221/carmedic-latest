@@ -7,20 +7,20 @@ import {
   Image,
   FlatList,
   TouchableOpacity,
-  Alert,
-  ActivityIndicatorBase,
 } from "react-native";
+import { Picker } from '@react-native-picker/picker';
 import AppBar from "./AppBar";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
-import MapView, { Marker, Polyline } from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import { fetchAllShops } from "../redux/shops/shopsThunk";
 
 const RequestRescueScreen = () => {
   const navigation = useNavigation();
   const [isLoading, setLoading] = useState(true);
-  const mapRef = useRef(null); // New useRef for MapView
+  const [selectedSpecialty, setSelectedSpecialty] = useState("");
+  const mapRef = useRef(null);
   const flatListRef = useRef(null);
   const dispatch = useDispatch();
 
@@ -28,12 +28,16 @@ const RequestRescueScreen = () => {
   const userLocation = useSelector(
     (state) => state.userLocation.currentLocation
   );
+  console.log("User Location:", userLocation);
+
   useEffect(() => {
     setLoading(loading);
   }, [loading]);
+
   useEffect(() => {
     dispatch(fetchAllShops());
   }, [dispatch]);
+
   const fitAllMarkers = () => {
     if (shops.length > 0 && mapRef.current) {
       const coordinates = shops.map((shop) => ({
@@ -48,12 +52,11 @@ const RequestRescueScreen = () => {
   };
 
   const handleMarkerPress = (shop) => {
-    const index = shops.findIndex((s) => s.id === shop.id);
+    const index = filteredShops.findIndex((s) => s.id === shop.id);
     if (flatListRef.current && index !== -1) {
       flatListRef.current.scrollToIndex({ index, animated: true });
     }
 
-    // Center map on the selected marker
     if (mapRef.current) {
       mapRef.current.animateToRegion(
         {
@@ -119,7 +122,7 @@ const RequestRescueScreen = () => {
 
     return (
       <MapView
-        ref={mapRef} // Attach mapRef here
+        ref={mapRef}
         style={styles.map}
         initialRegion={{
           latitude: userLocation.latitude,
@@ -131,7 +134,7 @@ const RequestRescueScreen = () => {
         showsUserLocation={true}
         followsUserLocation={true}
       >
-        {shops.map((shop) => {
+        {filteredShops.map((shop) => {
           const { longitude, latitude } = shop;
 
           return (
@@ -140,7 +143,7 @@ const RequestRescueScreen = () => {
               coordinate={{ longitude, latitude }}
               title={shop.shopName}
               description={shop.address}
-              pinColor="purple"
+              pinColor={shop.hasSelectedSpecialty ? "yellow" : "purple"}
               onPress={() => handleMarkerPress(shop)}
             />
           );
@@ -149,22 +152,63 @@ const RequestRescueScreen = () => {
     );
   };
 
+  const getDistance = (location1, location2) => {
+    const R = 6371; // Radius of the Earth in km
+    const dLat = (location2.latitude - location1.latitude) * (Math.PI / 180);
+    const dLon = (location2.longitude - location1.longitude) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(location1.latitude * (Math.PI / 180)) * Math.cos(location2.latitude * (Math.PI / 180)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
+  };
+
+  const filteredShops = shops
+    .map(shop => ({
+      ...shop,
+      distance: getDistance(userLocation, shop),
+      hasSelectedSpecialty: selectedSpecialty ? shop.specialties.includes(selectedSpecialty) : true, // Include all shops for "All Specialties"
+    }))
+    .sort((a, b) => {
+      if (a.hasSelectedSpecialty && !b.hasSelectedSpecialty) return -1;
+      if (!a.hasSelectedSpecialty && b.hasSelectedSpecialty) return 1;
+      return a.distance - b.distance;
+    })
+    .slice(0, 5); // Get top 5 shops
+
   return (
     <SafeAreaView style={styles.container}>
       <AppBar />
+      <View style={styles.filterContainer}>
+        <Picker
+          selectedValue={selectedSpecialty}
+          onValueChange={(itemValue) => setSelectedSpecialty(itemValue)}
+          style={styles.picker}
+        >
+          <Picker.Item label="All Specialties" value="" />
+          <Picker.Item label="Towing" value="Towing" />
+          <Picker.Item label="Battery Replacement" value="Battery Replacement" />
+          <Picker.Item label="Tire Change" value="Tire Change" />
+          <Picker.Item label="Oil Change" value="Oil Change" />
+          <Picker.Item label="Brake Repair" value="Brake Repair" />
+          <Picker.Item label="Transmission Repair" value="Transmission Repair" />
+          <Picker.Item label="Engine Repair" value="Engine Repair" />
+          <Picker.Item label="Body Work" value="Body Work" />
+          <Picker.Item label="Detailing" value="Detailing" />
+        </Picker>
+      </View>
       {renderMapView()}
       <FlatList
         ref={flatListRef}
         style={styles.shopList}
-        data={shops}
+        data={filteredShops}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
       />
     </SafeAreaView>
   );
 };
-
-export default RequestRescueScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -238,4 +282,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#777",
   },
+  filterContainer: {
+    padding: 10,
+    backgroundColor: "#fff",
+  },
+  picker: {
+    height: 50,
+    width: "100%",
+  },
 });
+
+export default RequestRescueScreen;

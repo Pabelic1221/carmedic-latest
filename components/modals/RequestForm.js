@@ -10,40 +10,63 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { Picker } from '@react-native-picker/picker'; // Import the Picker
+import MapView, { Marker } from "react-native-maps"; // Import MapView and Marker
+import * as Location from "expo-location"; // For getting current location
 import { auth, db } from "../../firebase"; // Ensure Firebase is properly initialized
 import { collection, addDoc } from "firebase/firestore";
 
-const RequestForm = ({ visible, onClose, shopId, latitude, longitude, specialties, userAddress }) => {
+const RequestForm = ({ visible, onClose, shopId, specialties, userAddress }) => {
   const [carBrand, setCarBrand] = useState("");
   const [carModel, setCarModel] = useState("");
   const [description, setDescription] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState(""); // State for selected specialty
   const [state] = useState("pending"); // Default state
-  const [userId] = useState(auth.currentUser ?.uid);
+  const [userId] = useState(auth.currentUser   ?.uid);
   const [userAddressState, setUserAddress] = useState(userAddress || ""); // Initialize to userAddress or empty string
+  const [selectedLocation, setSelectedLocation] = useState({
+    latitude: 37.78825, // Default latitude
+    longitude: -122.4324, // Default longitude
+  });
+  const [locationMethod, setLocationMethod] = useState("currentLocation"); // "currentLocation" or "manualPinning"
 
-  // Log latitude and longitude when the component mounts or when props change
+  // Get current location when "Current Location" is selected
   useEffect(() => {
-    console.log("Latitude:", latitude);
-    console.log("Longitude:", longitude);
-  }, [latitude, longitude]);
+    if (locationMethod === "currentLocation") {
+      (async () => {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert("Permission Denied", "Please enable location permissions to use this feature.");
+          return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+        setSelectedLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+      })();
+    }
+  }, [locationMethod]);
+
+  // Handle map press to update the selected location
+  const handleMapPress = (event) => {
+    if (locationMethod === "manualPinning") {
+      const { latitude, longitude } = event.nativeEvent.coordinate;
+      setSelectedLocation({ latitude, longitude });
+    }
+  };
 
   const handleSubmit = async () => {
     console.log("Car Brand:", carBrand);
     console.log("Car Model:", carModel);
     console.log("Description:", description);
     console.log("Specific Problem:", selectedSpecialty);
-    console.log("User Address:", userAddressState); // Log user address
+    console.log("User   Address:", userAddressState);
+    console.log("Selected Location:", selectedLocation);
 
     // Validate input fields
     if (!carBrand || !carModel || !description || !selectedSpecialty || !userAddressState) {
       Alert.alert("Validation Error", "Please fill in all fields.");
-      return;
-    }
-
-    // Check if latitude and longitude are defined
-    if (latitude === undefined || longitude === undefined) {
-      Alert.alert("Error", "Location data is missing.");
       return;
     }
 
@@ -55,8 +78,8 @@ const RequestForm = ({ visible, onClose, shopId, latitude, longitude, specialtie
         description,
         selectedSpecialty, // Include the selected specialty
         state,
-        latitude,
-        longitude,
+        latitude: selectedLocation.latitude,
+        longitude: selectedLocation.longitude,
         storeId: shopId,
         timestamp: new Date().toISOString(),
         address: userAddressState, // Use the user address here
@@ -71,57 +94,88 @@ const RequestForm = ({ visible, onClose, shopId, latitude, longitude, specialtie
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
+    <Modal visible={visible} animationType="slide" transparent ={true} onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContent}>
-          <Text style={styles.title}>Request Service</Text>
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContent}>
+            <Text style={styles.title}>Request Service</Text>
 
-          <Text style={styles.label}>Vehicle Brand</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter vehicle brand"
-            value={carBrand}
-            onChangeText={setCarBrand}
-          />
+            <Text style={styles.label}>Vehicle Brand</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter vehicle brand"
+              value={carBrand}
+              onChangeText={setCarBrand}
+            />
 
-          <Text style={styles.label}>Vehicle Model</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter vehicle model"
-            value={carModel}
-            onChangeText={setCarModel}
-          />
+            <Text style={styles.label}>Vehicle Model</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter vehicle model"
+              value={carModel}
+              onChangeText={setCarModel}
+            />
 
-          <Text style={[styles.label, styles.textArea]}>Description</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter description"
-            value={description}
-            onChangeText={setDescription}
-            multiline={true}
-          />
-          <Text style={styles.label}>Select Specialty</Text>
-          <Picker
-            selectedValue={selectedSpecialty}
-            onValueChange={(itemValue) => setSelectedSpecialty(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Select a specialty" value="" />
-            {specialties.map((specialty, index) => (
-              <Picker.Item key={index} label={specialty} value={specialty} />
-            ))}
-          </Picker>
+            <Text style={[styles.label, styles.textArea]}>Description</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter description"
+              value={description}
+              onChangeText={setDescription}
+              multiline={true}
+            />
 
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Submit Request</Text>
-          </TouchableOpacity>
+            <Text style={styles.label}>Select Specialty</Text>
+            <Picker
+              selectedValue={selectedSpecialty}
+              onValueChange={(itemValue) => setSelectedSpecialty(itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select a specialty" value="" />
+              {specialties.map((specialty, index) => (
+                <Picker.Item key={index} label={specialty} value={specialty} />
+              ))}
+            </Picker>
 
-          <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
+            <Text style={styles.label}>Select Location Method</Text>
+            <Picker
+              selectedValue={locationMethod}
+              onValueChange={(itemValue) => setLocationMethod(itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Current Location" value="currentLocation" />
+              <Picker.Item label="Manual Map Pinning" value="manualPinning" />
+            </Picker>
+
+            {locationMethod === "manualPinning" && (
+              <>
+                <Text style={styles.label}>Select Location</Text>
+                <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+                  <MapView
+                    style={styles.map}
+                    initialRegion={{
+                      latitude: selectedLocation.latitude,
+                      longitude: selectedLocation.longitude,
+                      latitudeDelta: 0.0922,
+                      longitudeDelta: 0.0421,
+                    }}
+                    onPress={handleMapPress}
+                  >
+                    <Marker coordinate={selectedLocation} />
+                  </MapView>
+                </TouchableWithoutFeedback>
+              </>
+            )}
+
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+              <Text style={styles.submitButtonText}>Submit Request</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
       </TouchableWithoutFeedback>
     </Modal>
   );
@@ -159,6 +213,11 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 50,
+    width: "100%",
+    marginBottom: 20,
+  },
+  map: {
+    height: 200,
     width: "100%",
     marginBottom: 20,
   },
