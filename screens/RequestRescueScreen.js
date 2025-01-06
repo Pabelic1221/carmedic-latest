@@ -185,21 +185,34 @@ const RequestRescueScreen = () => {
           selectedValue={selectedSpecialty}
           onValueChange={(itemValue) => setSelectedSpecialty(itemValue)}
           style={styles.picker}
+          itemStyle={{ fontSize: 10 }}
         >
-          <Picker.Item label="All Specialties" value="" />
-          <Picker.Item label="Oil Change and Filter Replacement" value="Oil Change and Filter Replacement" />
-          <Picker.Item label="Computerized Engine Diagnostics" value="Computerized Engine Diagnostics" />
-          <Picker.Item label="Brake Pad and Rotor Replacement" value="Brake Pad and Rotor Replacement" />
-          <Picker.Item label="Tire Repair and Vulcanizing" value="Tire Repair and Vulcanizing" />
-          <Picker.Item label="Timing Belt or Chain Replacement" value="Timing Belt or Chain Replacement" />
-          <Picker.Item label="Radiator Flush and Coolant Replacement" value="Radiator Flush and Coolant Replacement" />
-          <Picker.Item label="Shock Absorber and Strut Replacement" value="Shock Absorber and Strut Replacement" />
-          <Picker.Item label="Transmission Fluid Service" value="Transmission Fluid Service" />
-          <Picker.Item label="AC Recharge and Compressor Repair" value="AC Recharge and Compressor Repair" />
-          <Picker.Item label="Battery Testing and Replacement" value="Battery Testing and Replacement" />
+          <Picker.Item label="All Specialties" value="" labelStyle={{ fontSize: 12 }}/>
+          <Picker.Item label="Oil Change and Filter Replacement" value="Oil Change and Filter Replacement" labelStyle={{ fontSize: 10 }}/>
+          <Picker.Item label="Computerized Engine Diagnostics" value="Computerized Engine Diagnostics" labelStyle={{ fontSize: 10 }}/>
+          <Picker.Item label="Brake Pad and Rotor Replacement" value="Brake Pad and Rotor Replacement" labelStyle={{ fontSize: 10 }}/>
+          <Picker.Item label="Tire Repair and Vulcanizing" value="Tire Repair and Vulcanizing" labelStyle={{ fontSize: 10 }}/>
+          <Picker.Item label="Timing Belt or Chain Replacement" value="Timing Belt or Chain Replacement" labelStyle={{ fontSize: 10 }}/>
+          <Picker.Item label="Radiator Flush and Coolant Replacement" value="Radiator Flush and Coolant Replacement" labelStyle={{ fontSize: 10 }}/>
+          <Picker.Item label="Shock Absorber and Strut Replacement" value="Shock Absorber and Strut Replacement" labelStyle={{ fontSize: 10 }}/>
+          <Picker.Item label="Transmission Fluid Service" value="Transmission Fluid Service" labelStyle={{ fontSize: 10 }}/>
+          <Picker.Item label="AC Recharge and Compressor Repair" value="AC Recharge and Compressor Repair" labelStyle={{ fontSize: 10 }}/>
+          <Picker.Item label="Battery Testing and Replacement" value="Battery Testing and Replacement" labelStyle={{ fontSize: 10 }}/>
         </Picker>
       </View>
       {renderMapView()}
+      {/* Legend for Pin Colors (placed below the map) */}
+        <View style={styles.legendContainer}>
+          <Text style={styles.legendTitle}>Legend</Text>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendColor, { backgroundColor: 'yellow' }]} />
+            <Text style={styles.legendText}>Shops with Selected Specialty</Text>
+          </View>
+          <View style={styles.legendItem}>
+           <View style={[styles.legendColor, { backgroundColor: 'purple' }]} />
+            <Text style={styles.legendText}>Shops without Selected Specialty</Text>
+          </View>
+        </View>
       <FlatList
         ref={flatListRef}
         style={styles.shopList}
@@ -221,9 +234,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "#fff",
-    padding: 15,
+    padding: 10,
     marginVertical: 5,
-    borderRadius: 10,
+    borderRadius: 15,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -267,12 +280,13 @@ const styles = StyleSheet.create({
   },
   shopList: {
     margin: 15,
+    marginTop: 10,
   },
   map: {
     alignSelf: "center",
-    width: 300,
-    height: 400,
-    margin: 30,
+    width: "90%",
+    height: 350,
+    margin: 15,
   },
   loadingContainer: {
     flex: 1,
@@ -284,18 +298,57 @@ const styles = StyleSheet.create({
     color: "#777",
   },
   filterContainer: {
-    padding: 10,
+    padding: 5,
     backgroundColor: "#fff",
+    marginHorizontal: "5%",
+    borderRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+    width: "90%",
+    alignSelf: "center",
+    fontSize: 5,
   },
   picker: {
-    height: 50,
+    height: 50, 
     width: "100%",
-    padding: 10,
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 5,
     backgroundColor: "#fff",
-    marginHorizontal: 10,
+    padding: 5, 
+  },
+  legendContainer: {
+    padding: 10,
+    backgroundColor: "#fff",
+    marginHorizontal: 15,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  legendTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 5,
+  },
+  legendColor: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    marginRight: 10,
+  },
+  legendText: {
+    fontSize: 12,
+    color: "#777",
   },
 });
 
