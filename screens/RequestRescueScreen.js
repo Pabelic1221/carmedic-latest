@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import {
   StyleSheet,
   Text,
@@ -82,7 +82,7 @@ const RequestRescueScreen = () => {
           style={styles.shopImage}
         />
         <View style={styles.shopDetails}>
-          <Text style={styles.shopName}>{item.shopName}</Text>
+          <Text style={[styles.shopName, item.hasSelectedSpecialty && { fontWeight: 'bold' }]}>{item.shopName}</Text>
           <Text style={styles.shopAddress}>{item.address}</Text>
           <View style={styles.ratingContainer}>
             <Ionicons name="star" size={18} color="#FFD700" />
@@ -164,18 +164,22 @@ const RequestRescueScreen = () => {
     return R * c; // Distance in km
   };
 
-  const filteredShops = shops
-    .map(shop => ({
-      ...shop,
-      distance: getDistance(userLocation, shop),
-      hasSelectedSpecialty: selectedSpecialty ? shop.specialties.includes(selectedSpecialty) : true, // Include all shops for "All Specialties"
-    }))
-    .sort((a, b) => {
-      if (a.hasSelectedSpecialty && !b.hasSelectedSpecialty) return -1;
-      if (!a.hasSelectedSpecialty && b.hasSelectedSpecialty) return 1;
-      return a.distance - b.distance;
-    })
-    .slice(0, 5); // Get top 5 shops
+  const filteredShops = useMemo(() => {
+    return shops
+      .map((shop) => ({
+        ...shop,
+        distance: getDistance(userLocation, shop),
+        hasSelectedSpecialty: selectedSpecialty
+          ? shop.specialties.includes(selectedSpecialty)
+          : true,
+      }))
+      .sort((a, b) => {
+        if (a.hasSelectedSpecialty && !b.hasSelectedSpecialty) return -1;
+        if (!a.hasSelectedSpecialty && b.hasSelectedSpecialty) return 1;
+        return a.distance - b.distance;
+      })
+      .slice(0, 5);
+  }, [shops, userLocation, selectedSpecialty]);
 
   return (
     <SafeAreaView style={styles.container}>
