@@ -187,15 +187,16 @@ const RequestRescueScreen = () => {
           style={styles.picker}
         >
           <Picker.Item label="All Specialties" value="" />
-          <Picker.Item label="Towing" value="Towing" />
-          <Picker.Item label="Battery Replacement" value="Battery Replacement" />
-          <Picker.Item label="Tire Change" value="Tire Change" />
-          <Picker.Item label="Oil Change" value="Oil Change" />
-          <Picker.Item label="Brake Repair" value="Brake Repair" />
-          <Picker.Item label="Transmission Repair" value="Transmission Repair" />
-          <Picker.Item label="Engine Repair" value="Engine Repair" />
-          <Picker.Item label="Body Work" value="Body Work" />
-          <Picker.Item label="Detailing" value="Detailing" />
+          <Picker.Item label="Oil Change and Filter Replacement" value="Oil Change and Filter Replacement" />
+          <Picker.Item label="Computerized Engine Diagnostics" value="Computerized Engine Diagnostics" />
+          <Picker.Item label="Brake Pad and Rotor Replacement" value="Brake Pad and Rotor Replacement" />
+          <Picker.Item label="Tire Repair and Vulcanizing" value="Tire Repair and Vulcanizing" />
+          <Picker.Item label="Timing Belt or Chain Replacement" value="Timing Belt or Chain Replacement" />
+          <Picker.Item label="Radiator Flush and Coolant Replacement" value="Radiator Flush and Coolant Replacement" />
+          <Picker.Item label="Shock Absorber and Strut Replacement" value="Shock Absorber and Strut Replacement" />
+          <Picker.Item label="Transmission Fluid Service" value="Transmission Fluid Service" />
+          <Picker.Item label="AC Recharge and Compressor Repair" value="AC Recharge and Compressor Repair" />
+          <Picker.Item label="Battery Testing and Replacement" value="Battery Testing and Replacement" />
         </Picker>
       </View>
       {renderMapView()}
