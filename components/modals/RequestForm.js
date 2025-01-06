@@ -117,10 +117,10 @@ const RequestForm = ({ visible, onClose, shopId, specialties, userAddress }) => 
                 onChangeText={setCarModel}
               />
 
-              <Text style={[styles.label, styles.textArea]}>Description</Text>
+              <Text style={[styles.label, styles.textArea]}>Additional Information</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Enter description"
+                placeholder="ex. My car won't start."
                 value={description}
                 onChangeText={setDescription}
                 multiline={true}
