@@ -22,16 +22,16 @@ import { useSelector } from "react-redux";
 import { fetchCurrentUser } from "../redux/user/userActions";
 
 const predefinedSpecialties = [
-  "Towing",
-  "Jump Start",
-  "Battery Delivery",
-  "Flat Tire",
-  "Fuel",
-  "Overheating",
-  "Brake Problem",
-  "Lockout",
-  "Change Oil",
-  "Vehicle Maintenance",
+  "Oil Change and Filter Replacement",
+  "Computerized Engine Diagnostics",
+  "Brake Pad and Rotor Replacement",
+  "Tire Repair and Vulcanizing",
+  "Timing Belt or Chain Replacement",
+  "Radiator Flush and Coolant Replacement",
+  "Shock Absorber and Strut Replacement",
+  "Transmission Fluid Service",
+  "AC Recharge and Compressor Repair",
+  "Battery Testing and Replacement",
 ];
 
 const ShopProfile = () => {

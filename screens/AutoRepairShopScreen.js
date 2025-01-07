@@ -30,7 +30,7 @@ const haversineDistance = (lat1, lon1, lat2, lon2) => {
   return R * c; // Distance in km
 };
 
-const AutoRepairShopScreen = () => {
+const AutoRepairShopScreen = ({ item }) => {
   const route = useRoute();
   const navigation = useNavigation();
   const [isRequestFormVisible, setRequestFormVisible] = useState(false);
@@ -147,9 +147,11 @@ const AutoRepairShopScreen = () => {
               {shop.address}
             </Text>
             {/* Shop Ratings Section */}
-            <View style={styles.ratingsContainer}>
-              <Text style={styles.shopRatings}>
-                Ratings: {shop.averageRating ? shop.averageRating : "0 ratings"}
+            <View style={styles.ratingContainer}>
+              <Ionicons name="star" size={18} color="#FFD700" />
+              <Text style={styles.shopRating}>
+                {(shop && shop.averageRating) || 0} ({shop && shop.reviewCount || 0}{" "}
+                {(shop && shop.reviewCount) <= 1 ? "review" : "reviews"})
               </Text>
             </View>
           </View>
@@ -261,7 +263,7 @@ const styles = StyleSheet.create({
   shopInfo: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   imageContainer: {
     marginRight: 15,
@@ -286,7 +288,7 @@ const styles = StyleSheet.create({
   detailsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   servicesContainer: {
     flex: 1,
@@ -307,22 +309,17 @@ const styles = StyleSheet.create({
     color: "gray",
     marginBottom: 5,
   },
-  rating: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   ratingText: {
-    marginLeft: 5,
     fontSize: 16,
   },
   reviewCount: {
     color: "gray",
   },
   contactContainer: {
-    marginBottom: 10,
+    marginBottom: 0,
   },
   hoursContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -369,26 +366,24 @@ const styles = StyleSheet.create({
   shopRatings: {
     fontSize: 14,
     color: "#333",
-    marginVertical: 5,
   },
   servicesHeading: {
-    fontSize: 25,
+    fontSize: 20,
     fontWeight: "bold",
     marginVertical: 5,
   },
   contactHeading: {
-    fontSize: 25,
+    fontSize: 20,
     fontWeight: "bold",
     marginVertical: 5,
   },
   servicesContainer: {
-    marginBottom: 2,
+    marginBottom: 0,
   },
   shopSpecialties: {
     color: "gray",
     marginTop: 0,
     fontSize: 15,
-    marginBottom: 10,
   },
   noServicesText: {
     color: "red",
@@ -401,16 +396,13 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 10,
   },
   reviewButtonText: {
     color: "white",
     fontWeight: "bold",
   },
   // New styles for the additional sections
-  ratingsContainer: {
-    marginVertical: 2,
-  },
   specialtiesContainer: {
     marginVertical: 10,
   },
@@ -423,10 +415,10 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   hoursContainer: {
-    marginBottom: 20,
+    marginBottom: 5,
   },
   hoursHeading: {
-    fontSize: 25,
+    fontSize: 20,
     fontWeight: "bold",
     marginVertical: 5,
   },

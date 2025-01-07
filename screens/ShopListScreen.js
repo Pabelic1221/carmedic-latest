@@ -107,20 +107,23 @@ const ShopListScreen = () => {
         <Text style={styles.shopInfo}>
           {item.address ? `${item.address}, ` : "N/A, "}
         </Text>
-        <Text style={styles.shopInfo}>
-          {item.reviewCount} {item.reviewCount !== 1 ? "reviews" : "review"},{" "}
-          {item.averageRating <= 0
-            ? "No ratings yet"
-            : `Average Rating: ${item.averageRating}`}
-        </Text>
+        <View style={styles.ratingContainer}>
+         <Ionicons name="star" size={18} color="#FFD700" />
+         <Text style={styles.shopRating}>
+           {parseFloat(item.averageRating || 0).toFixed(1)} ({item.reviewCount || 0}{" "}
+            {item.reviewCount <= 1 ? "review" : "reviews"})
+          </Text>
+        </View>
       </View>
       <TouchableOpacity
-       style={styles.moreIcon}
-        onPress={() => navigation.navigate("Auto Repair Shop", { item })} // Navigate to AutoRepairShopScreen
-      ><Ionicons name="chevron-forward" size={24} color="#000" />
+        style={styles.moreIcon}
+        onPress={() => navigation.navigate("Auto Repair Shop", { item })}
+      >
+        <Ionicons name="chevron-forward" size={24} color="#000" />
       </TouchableOpacity>
     </View>
   );
+
   return (
     <SafeAreaView style={styles.container}>
       <AppBar />
@@ -133,10 +136,10 @@ const ShopListScreen = () => {
         />
       </View>
       {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" style = {styles.loadingIndicator} />
+        <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />
       ) : (
         <FlatList
-          data={filteredShops}
+          data={filteredShops }
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContainer}
@@ -187,6 +190,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   shopInfo: {
+    color: "#666",
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  shopRating: {
+    marginLeft: 5,
     color: "#666",
   },
   moreIcon: {

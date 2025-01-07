@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   Image,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { auth, db } from "../firebase";
@@ -41,23 +42,43 @@ const ShopDrawerContent = memo((props) => {
   }, [currentUser]); // Empty dependency array ensures this runs only once when the component mounts
 
   const handleSignOut = () => {
-    signOut(auth)
-      .then(() => {
-        console.log("User  signed out successfully.");
-        dispatch(resetUser ());
-        dispatch(resetRequests());
-        dispatch(userLocationActions.resetLocation());
-        dispatch(resetShops());
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "Login" }], // Ensure this matches your login screen name
-        });
-      })
-      .catch((error) => {
-        console.error("Sign out error:", error);
-        alert(error.message);
-      });
+    // Show confirmation alert
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to log out?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel", // Cancel button
+        },
+        {
+          text: "Logout",
+          style: "destructive", // Destructive action (red text on iOS)
+          onPress: () => {
+            // Perform logout if user confirms
+            signOut(auth)
+              .then(() => {
+                console.log("User signed out successfully.");
+                dispatch(resetUser ());
+                dispatch(resetRequests());
+                dispatch(userLocationActions.resetLocation());
+                dispatch(resetShops());
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: "Login" }], // Ensure this matches your login screen name
+                });
+              })
+              .catch((error) => {
+                console.error("Sign out error:", error);
+                alert(error.message);
+              });
+          },
+        },
+      ],
+      { cancelable: true } // Allow dismissing the alert by tapping outside
+    );
   };
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>

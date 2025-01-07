@@ -71,8 +71,14 @@ const RequestRescueScreen = () => {
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.shopItem}>
+    <TouchableOpacity
+      style={styles.shopItem}
+      onPress={() => {
+        navigation.navigate("Auto Repair Shop", { item });
+      }}
+    >
       <View style={styles.shopInfo}>
+        {/* Shop Image */}
         <Image
           source={{
             uri: item.profilePicUrl
@@ -81,9 +87,20 @@ const RequestRescueScreen = () => {
           }}
           style={styles.shopImage}
         />
+  
+        {/* Shop Details */}
         <View style={styles.shopDetails}>
-          <Text style={[styles.shopName, item.hasSelectedSpecialty && { fontWeight: 'bold' }]}>{item.shopName}</Text>
-          <Text style={styles.shopAddress}>{item.address}</Text>
+          {/* Shop Name */}
+          <Text style={[styles.shopName, item.hasSelectedSpecialty && { fontWeight: 'bold' }]}>
+            {item.shopName}
+          </Text>
+  
+          {/* Shop Address */}
+          <Text style={styles.shopAddress} numberOfLines={2} ellipsizeMode="tail">
+            {item.address}
+          </Text>
+  
+          {/* Rating and Reviews */}
           <View style={styles.ratingContainer}>
             <Ionicons name="star" size={18} color="#FFD700" />
             <Text style={styles.shopRating}>
@@ -91,17 +108,19 @@ const RequestRescueScreen = () => {
               {item.reviewCount <= 1 ? "review" : "reviews"})
             </Text>
           </View>
+  
+          {/* Distance Text with Conditional Color */}
+          <Text
+            style={[
+              styles.distanceText,
+              item.distance < 10 ? styles.distanceGreen : styles.distanceRed, // Conditional styling
+            ]}
+          >
+            {item.distance.toFixed(2)} km away
+          </Text>
         </View>
       </View>
-      <TouchableOpacity
-        style={styles.navigateButton}
-        onPress={() => {
-          navigation.navigate("Auto Repair Shop", { item });
-        }}
-      >
-        <Ionicons name="arrow-forward" size={24} color="#000" />
-      </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderMapView = () => {
@@ -170,7 +189,7 @@ const RequestRescueScreen = () => {
         ...shop,
         distance: getDistance(userLocation, shop),
         hasSelectedSpecialty: selectedSpecialty
-          ? shop.specialties.includes(selectedSpecialty)
+          ? shop.specialties?.includes(selectedSpecialty) || false
           : true,
       }))
       .sort((a, b) => {
@@ -265,22 +284,33 @@ const styles = StyleSheet.create({
   shopAddress: {
     fontSize: 14,
     color: "#777",
+    marginTop: 5,
+    flexShrink: 1, // Allow text to wrap
+    numberOfLines: 2, // Limit to 2 lines
+    ellipsizeMode: "tail", // Add ellipsis if text overflows
+  },
+  shopDetails: {
+    flex: 1,
+    flexShrink: 1,
+    marginRight: 5,
   },
   ratingContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 5,
   },
   shopRating: {
     marginLeft: 5,
     fontSize: 14,
     color: "#777",
   },
-  navigateButton: {
-    padding: 10,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 50,
-    marginLeft: 40,
+  distanceText: {
+    fontSize: 14,
+  },
+  distanceGreen: {
+    color: "green", 
+  },
+  distanceRed: {
+    color: "red",
   },
   shopList: {
     margin: 15,
