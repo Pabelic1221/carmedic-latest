@@ -14,7 +14,6 @@ import {
   collection,
   query,
   where,
-  getDocs,
   getDoc,
   onSnapshot,
   doc,
@@ -99,46 +98,66 @@ const UserRequestLogScreen = () => {
   const declinedRequests = requests.filter(req => req.state === "declined").sort((a, b) => b.timestamp - a.timestamp);
 
   // Combine all requests in the desired order
-  const sortedRequests = [
-    ...acceptedRequests,
-    ...ongoingRequests,
-    ...endedRequests,
-    ...declinedRequests,
-  ];
+  // Combine all requests in the desired order
+// Combine all requests in the desired order
+// Combine all requests in the desired order
+const sortedRequests = [
+  ...requests.sort((a, b) => {
+    const dateA = new Date(a.timestamp);
+    const dateB = new Date(b.timestamp);
+    const hourA = dateA.getHours();
+    const hourB = dateB.getHours();
+    const minuteA = dateA.getMinutes();
+    const minuteB = dateB.getMinutes();
 
-  const renderRequestItem = ({ item }) => (
+    if (dateA.getDate() === dateB.getDate() && dateA.getMonth() === dateB.getMonth() && dateA.getFullYear() === dateB.getFullYear()) {
+      if (hourA === hourB) {
+        return minuteB - minuteA;
+      } else {
+        return hourB - hourA;
+      }
+    } else {
+      return dateB - dateA;
+    }
+  }),
+];
+
+const renderRequestItem = ({ item }) => {
+  const request = item;
+  return (
     <TouchableOpacity
       style={styles.card}
       onPress={async () => {
-        if (item.state === "accepted") {
-          await handleAcceptedRequest(item);
+        if (request.state === "accepted") {
+          await handleAcceptedRequest(request);
           return;
         }
-  
-        navigation.navigate("User RequestTracking", { request: item });
+    
+        navigation.navigate("UserRequestTracking", { request });
       }}
     >
-      <Text style={styles.cardTitle}>{item.specificProblem} Request</Text>
-      <Text style={styles.cardSubtitle}>Shop: {item.shopName}</Text>
-      <Text style={styles.cardStatus}>Status: <Text style={styles.boldText}>{item.state}</Text></Text> {/* Added status here */}
+      <Text style={styles.cardTitle}>{request.selectedSpecialty} Request</Text>
+      <Text style={styles.cardSubtitle}>Shop: {request.shopName}</Text>
+      <Text style={styles.cardStatus}>Status: <Text style={styles.boldText}>{request.state}</Text></Text> {/* Added status here */}
       <Text style={styles.cardDate}>
-        {new Date(item.timestamp).toLocaleDateString()}{" "}
-        {new Date(item.timestamp).toLocaleTimeString()}
+        {new Date(request.timestamp).toLocaleDateString()}{" "}
+        {new Date(request.timestamp).toLocaleTimeString()}
       </Text>
     </TouchableOpacity>
   );
+};
 
   return (
     <SafeAreaView style={styles.container}>
       <AppBar />
       <FlatList
-        data={sortedRequests}
-        keyExtractor={(item) => item.id}
-        renderItem={renderRequestItem}
-        ListEmptyComponent={
-          <Text style={styles.emptyMessage}>No previous requests found.</Text>
-        }
-      />
+          data={sortedRequests}
+          keyExtractor={(item) => item.id}
+          renderItem={renderRequestItem}
+          ListEmptyComponent={
+            <Text style={styles.emptyMessage}>No previous requests found.</Text>
+         }
+       />
       <Modal
         visible={selectedRequest !== null}
         transparent={true}
@@ -160,7 +179,7 @@ const UserRequestLogScreen = () => {
                   Description: {selectedRequest.description}
                 </Text>
                 <Text style={styles.modalText}>
-                  Specific Problem: {selectedRequest.specificProblem}
+                  Selected Specialty: {selectedRequest.selectedSpecialty}
                 </Text>
                 <Text style={styles.modalText}>
                   Shop: {selectedRequest.shopName}
@@ -224,6 +243,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#555",
     marginTop: 4, // Add some margin for spacing
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyMessage: {
     textAlign: "center",

@@ -59,7 +59,7 @@ const ShopDrawerContent = memo((props) => {
             signOut(auth)
               .then(() => {
                 console.log("User signed out successfully.");
-                dispatch(resetUser ());
+                dispatch(resetUser());
                 dispatch(resetRequests());
                 dispatch(userLocationActions.resetLocation());
                 dispatch(resetShops());

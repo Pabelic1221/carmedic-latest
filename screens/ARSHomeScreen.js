@@ -9,7 +9,7 @@ import {
   Image,
 } from "react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, Polyline } from "react-native-maps";
 import { useSelector, useDispatch } from "react-redux";
 import RequestTicket from "../components/modals/RequestTicket";
 import ShopAppBar from "./ShopAppBar";
@@ -18,18 +18,21 @@ import { useNavigation } from "@react-navigation/native";
 import TicketListener from "../components/map/Shops/TicketListener";
 import { setRequestLocation } from "../redux/requests/requests";
 import { fetchAllRequests } from "../redux/requests/requestsThunk";
+import { updateDoc, doc } from "firebase/firestore";
+import { db } from "../firebase";
+
 
 const ARSHomeScreen = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const mapRef = useRef(null); // Step 1: Create the mapRef
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isLoading, setLoading] = useState(null);
+
   const { requests, loading } = useSelector((state) => state.requests);
-  const currentUser  = useSelector((state) => state.user.currentUser );
+
   const location = useSelector((state) => state.userLocation.currentLocation);
-
-
   const userLocation = useMemo(() => location, [location]);
   const handleRequestPress = (request) => {
     setSelectedRequest(request);
@@ -43,17 +46,9 @@ const ARSHomeScreen = () => {
     dispatch(setRequestLocation(request));
     navigation.navigate("OngoingRequest", { request });
   };
-
   useEffect(() => {
-    const fetchRequests = async () => {
-      if (currentUser  && requests.length === 1) { // Check if requests are empty
-        await dispatch(fetchAllRequests());
-      }
-    };
-
-    fetchRequests();
-  }, [currentUser , requests.length, dispatch]);
-
+    dispatch(fetchAllRequests());
+  }, [dispatch]);
   useEffect(() => {
     setLoading(loading);
   }, [loading]);
@@ -96,7 +91,7 @@ const ARSHomeScreen = () => {
               longitude: request.longitude,
             }}
             title={request.firstName}
-            description={request.specificProblem}
+            description={request.selectedSpecialty}
             pinColor="purple"
             onPress={() => {
               if (request.state === "accepted") {
@@ -137,7 +132,7 @@ const ARSHomeScreen = () => {
                     {item.firstName} {item.lastName}
                   </Text>
                   <Text style={styles.problemText}>
-                    Service Request: {item.specificProblem}
+                    Service Request: {item.selectedSpecialty}
                   </Text>
                   <Text style={styles.statusText}>{item.state}</Text>
                 </View>
@@ -145,10 +140,11 @@ const ARSHomeScreen = () => {
               <TouchableOpacity
                 style={styles.navigateButton}
                 onPress={() => {
-                  if (item.state === "accepted") {
-                    handleInitRescue(item);
+                  const request = item;
+                  if (request.state === "accepted") {
+                    handleInitRescue(request);
                   } else {
-                    handleRequestPress(item);
+                    handleRequestPress(request);
                   }
                 }}
               >
@@ -168,7 +164,17 @@ const ARSHomeScreen = () => {
               request={selectedRequest}
               onClose={handleCloseModal}
               onAcceptRequest={(request) => {
-                navigation.navigate("OngoingRequest", { request });
+                const requestDoc = doc(db, "requests", request.id);
+                updateDoc(requestDoc, {
+                  state: "accepted",
+                  timestamp: new Date().toISOString(),
+                })
+                .then(() => {
+                  navigation.navigate("OngoingRequest", { request });
+                })
+                .catch((error) => {
+                  console.error("Error updating request state:", error);
+                });
               }}
             />
           ) : (

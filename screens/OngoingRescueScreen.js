@@ -133,7 +133,7 @@ const OngoingRequestScreen = ({ route }) => {
               state: "ongoing",
               longitude,
               latitude,
-              timestamp: new Date().toISOString(),
+              timestamp: new Date().toISOString()
             },
             { merge: true }
           );
@@ -150,7 +150,7 @@ const OngoingRequestScreen = ({ route }) => {
     dispatch,
     destination,
     rescueRoute.length,
-    currentUser ?.role,
+    currentUser  ?.role,
     request.id,
   ]);
 
@@ -173,7 +173,7 @@ const OngoingRequestScreen = ({ route }) => {
             if (distance > 100) {
               dispatch(actions.setCurrentLocation(newLocation));
 
-              if (currentUser ?.role === "Shop") {
+              if (currentUser  ?.role === "Shop") {
                 await updateDoc(doc(db, "shopOnRescue", request.id), {
                   latitude,
                   longitude,
@@ -192,7 +192,7 @@ const OngoingRequestScreen = ({ route }) => {
 
     trackLocation();
     return () => locationSubscription?.remove();
-  }, [dispatch, destination, request.id, currentUser ?.role]);
+  }, [dispatch, destination, request.id, currentUser  ?.role]);
 
   const handleEndRequest = () => setModalVisible(true);
 
@@ -201,11 +201,25 @@ const OngoingRequestScreen = ({ route }) => {
   };
 
   const handleConfirmEndRequest = async () => {
-    // Logic to end the request (e.g., update Firestore)
-    // You can add your logic here to update the request state in Firestore
-
-    // After ending the request, navigate back or pop the screen
-    navigation.goBack(); // This will close the OngoingRequestScreen
+    try {
+      const requestDoc = doc(db, "requests", request.id);
+      await updateDoc(requestDoc, {
+        state: "ended",
+        timestamp: new Date().toISOString(),
+      });
+  
+      if (currentUser  ?.role === "Shop") {
+        const rescueDoc = doc(db, "shopOnRescue", request.id);
+        await updateDoc(rescueDoc, {
+          state: "ended",
+          timestamp: new Date().toISOString(),
+        });
+      }
+  
+      navigation.goBack(); // This will close the OngoingRequestScreen
+    } catch (error) {
+      console.error("Error updating request state:", error);
+    }
   };
 
   if (isLoading) {
@@ -240,7 +254,7 @@ const OngoingRequestScreen = ({ route }) => {
                longitude: parseFloat(userLocation.longitude), // Convert to number
              }}
              title="Your Location"
-             pinColor="purple"
+             pinColor="yellow"
            />
          )}
          {destination && (
@@ -250,7 +264,7 @@ const OngoingRequestScreen = ({ route }) => {
                 longitude: parseFloat(destination.longitude), // Convert to number
              }}
               title={"Destination"}
-              pinColor="blue"
+              pinColor="purple"
             />
          )}
          {rescueRoute.length > 0 && (       
@@ -278,7 +292,8 @@ const OngoingRequestScreen = ({ route }) => {
           <EndTicket
             visible={isModalVisible}
             request={request}
-            onClose={() => setModalVisible(false)}
+            onClose={()=>setModalVisible(false)}
+            onConfirm={handleConfirmEndRequest}
             navigation={navigation} // Pass the navigation prop here
           />
           </View>
@@ -328,6 +343,12 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 15,
     elevation: 5,
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });
 

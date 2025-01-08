@@ -52,8 +52,8 @@ const DrawerContent = memo((props) => {
             // Perform logout if user confirms
             signOut(auth)
               .then(() => {
-                console.log("User  signed out successfully.");
-                dispatch(resetUser ());
+                console.log("User signed out successfully.");
+                dispatch(resetUser());
                 dispatch(resetRequests());
                 dispatch(userLocationActions.resetLocation());
                 dispatch(resetShops());

@@ -8,18 +8,19 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import { Picker } from '@react-native-picker/picker';
 import AppBar from "./AppBar";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import MapView, { Marker } from "react-native-maps";
 import { fetchAllShops } from "../redux/shops/shopsThunk";
+import Modal from 'react-native-modal';
 
 const RequestRescueScreen = () => {
   const navigation = useNavigation();
   const [isLoading, setLoading] = useState(true);
-  const [selectedSpecialty, setSelectedSpecialty] = useState("");
+  const [selectedSpecialties, setSelectedSpecialties] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const mapRef = useRef(null);
   const flatListRef = useRef(null);
   const dispatch = useDispatch();
@@ -28,7 +29,7 @@ const RequestRescueScreen = () => {
   const userLocation = useSelector(
     (state) => state.userLocation.currentLocation
   );
-  console.log("User  Location:", userLocation);
+  console.log("User Location:", userLocation);
 
   useEffect(() => {
     setLoading(loading);
@@ -149,8 +150,8 @@ const RequestRescueScreen = () => {
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         }}
-        loadingEnabled={true}
-        showsUser Location={true}
+        loading Enabled={true}
+        showsUserLocation={true}
         followsUserLocation={true}
       >
         {filteredShops.map((shop) => {
@@ -183,10 +184,33 @@ const RequestRescueScreen = () => {
     return R * c; // Distance in km
   };
 
+  const specialtyList = [
+    'Oil Change and Filter Replacement',
+    'Computerized Engine Diagnostics',
+    'Brake Pad and Rotor Replacement',
+    'Tire Repair and Vulcanizing',
+    'Timing Belt or Chain Replacement',
+    'Radiator Flush and Coolant Replacement',
+    'Shock Absorber and Strut Replacement',
+    'Transmission Fluid Service',
+    'AC Recharge and Compressor Repair',
+    'Battery Testing and Replacement',
+  ];
+
+  const handleSpecialtyPress = (specialty) => {
+    if (selectedSpecialties.includes(specialty)) {
+      setSelectedSpecialties(selectedSpecialties.filter((s) => s !== specialty));
+    } else {
+      setSelectedSpecialties([...selectedSpecialties, specialty]);
+    }
+  };
+
   const filteredShops = useMemo(() => {
     return shops
       .filter((shop) => 
-        selectedSpecialty ? shop.specialties?.includes(selectedSpecialty) : true
+        selectedSpecialties.length > 0 
+          ? selectedSpecialties.some(specialty => shop.specialties?.includes(specialty)) 
+          : true
       )
       .map((shop) => ({
         ...shop,
@@ -194,31 +218,44 @@ const RequestRescueScreen = () => {
       }))
       .filter((shop) => shop.distance <= 10) // Filter shops within 10 km
       .sort((a, b) => a.distance - b.distance);
-  }, [shops, userLocation, selectedSpecialty]);
+  }, [shops, userLocation, selectedSpecialties]);
 
   return (
     <SafeAreaView style={styles.container}>
       <AppBar />
-      <View style={styles.filterContainer}>
-        <Picker
-          selectedValue={selectedSpecialty}
-          onValueChange={(itemValue) => setSelectedSpecialty(itemValue)}
-          style={styles.picker}
-          itemStyle={{ fontSize: 10 }}
-        >
-          <Picker.Item label="Select Specialty" value="" labelStyle={{ fontSize: 12 }}/>
-          <Picker.Item label="Oil Change and Filter Replacement" value="Oil Change and Filter Replacement" labelStyle={{ fontSize: 10 }}/>
-          <Picker.Item label="Computerized Engine Diagnostics" value="Computerized Engine Diagnostics" labelStyle={{ fontSize: 10 }}/>
-          <Picker.Item label="Brake Pad and Rotor Replacement" value="Brake Pad and Rotor Replacement" labelStyle={{ fontSize: 10 }}/>
-          <Picker.Item label="Tire Repair and Vulcanizing" value="Tire Repair and Vulcanizing" labelStyle={{ fontSize: 10 }}/>
-          <Picker.Item label="Timing Belt or Chain Replacement" value="Timing Belt or Chain Replacement" labelStyle={{ fontSize: 10 }}/>
-          <Picker.Item label="Radiator Flush and Coolant Replacement" value="Radiator Flush and Coolant Replacement" labelStyle={{ fontSize: 10 }}/>
-          <Picker.Item label="Shock Absorber and Strut Replacement" value="Shock Absorber and Strut Replacement" labelStyle={{ fontSize: 10 }}/>
-          <Picker.Item label="Transmission Fluid Service" value="Transmission Fluid Service" labelStyle={{ fontSize: 10 }}/>
-          <Picker.Item label="AC Recharge and Compressor Repair" value="AC Recharge and Compressor Repair" labelStyle={{ fontSize: 10 }}/>
-          <Picker.Item label="Battery Testing and Replacement" value="Battery Testing and Replacement" labelStyle={{ fontSize: 10 }}/>
-        </Picker>
-      </View>
+      <TouchableOpacity
+       style={styles.filterContainer}
+       onPress={() => setIsModalVisible(true)}
+      >
+        <Text style={styles.filterText}>
+          {selectedSpecialties.length === 0
+            ? "Select Specialties"
+           : `${selectedSpecialties.length} Specialties selected`}
+       </Text>
+      </TouchableOpacity>
+      <Modal
+        isVisible={isModalVisible}
+        onBackdropPress={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          {specialtyList.map((specialty) => (
+            <TouchableOpacity
+              key={specialty}
+              style={{
+                padding: 10,
+                borderBottomWidth: 1,
+                borderBottomColor: '#ccc',
+                backgroundColor: selectedSpecialties.includes(specialty) ? '#4CAF50' : '#fff',
+              }}
+              onPress={() => handleSpecialtyPress(specialty)}
+            >
+              <Text style={{ fontSize: 16, color: selectedSpecialties.includes(specialty) ? '#fff' : '#333' }}>
+                {specialty}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </Modal>
       {renderMapView()}
       <View style={styles.legendContainer}>
         <Text style={styles.legendTitle}>Legend</Text>
@@ -323,7 +360,7 @@ const styles = StyleSheet.create({
     color: "#777",
   },
   filterContainer: {
-    padding: 5,
+    padding: 10,
     backgroundColor: "#fff",
     marginHorizontal: "5%",
     borderRadius: 20,
@@ -334,15 +371,25 @@ const styles = StyleSheet.create({
     elevation: 3,
     width: "90%",
     alignSelf: "center",
-    fontSize: 5,
   },
-  picker: {
-    height: 50, 
-    width: "100%",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    backgroundColor: "#fff",
-    padding: 5, 
+  filterText: {
+    fontSize: 16,
+    color: "#333",
+    marginHorizontal: 15,
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+  },
+  specialtyButton: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  specialtyText: {
+    fontSize: 16,
+    color: '#333',
   },
   legendContainer: {
     padding: 10,
@@ -359,11 +406,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
     marginBottom: 5,
+    marginHorizontal: 5,
   },
   legendItem: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 5,
+    marginHorizontal: 5,
   },
   legendColor: {
     width: 20,

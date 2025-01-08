@@ -6,6 +6,7 @@ import { db } from "../firebase"; // Assuming Firebase is used for data storage
 import { doc, onSnapshot } from "firebase/firestore";
 import Ionicons from "react-native-vector-icons/Ionicons"; // Import Ionicons for the back button
 import axios from "axios"; // Import axios for fetching route data
+import * as Location from "expo-location";
 
 const UserRequestTrackingScreen = ({ route, navigation }) => {
   const { request } = route.params; // Get the request details passed from the previous screen
@@ -15,24 +16,45 @@ const UserRequestTrackingScreen = ({ route, navigation }) => {
   const [routeCoordinates, setRouteCoordinates] = useState([]); // State for route coordinates
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(doc(db, "shopOnRescue", request.id), (doc) => {
-      if (doc.exists()) {
-        const data = doc.data();
-        setShopLocation(data);
-        fetchRoute(userLocation, data); // Fetch the route when shop location is available
-        setIsLoading(false);
-      } else {
-        // Handle the case where the document does not exist
-        setIsLoading(false);
-        Alert.alert("Error", "Shop location not found.");
-      }
-    }, (error) => {
-      // Handle errors in fetching data
-      setIsLoading(false);
-      Alert.alert("Error", "Failed to fetch shop location.");
-    });
+    const initializeData = async () => {
+      try {
+        // Request permissions and get initial user location
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          console.error("Location permissions not granted");
+          return;
+        }
   
-    return () => unsubscribe();
+        const currentLocation = await Location.getCurrentPositionAsync({});
+        const { latitude, longitude } = currentLocation.coords;
+        // Update userLocation state with the current location
+        // You can add your logic here to update the userLocation state
+  
+        // Fetch shop location from Firestore
+        const unsubscribe = onSnapshot(doc(db, "shopOnRescue", request.id), (doc) => {
+          if (doc.exists()) {
+            const data = doc.data();
+            setShopLocation(data);
+            fetchRoute(userLocation, data); // Fetch the route when shop location is available
+            setIsLoading(false);
+          } else {
+            // Handle the case where the document does not exist
+            setIsLoading(false);
+            Alert.alert("Error", "Shop location not found.");
+          }
+        }, (error) => {
+          // Handle errors in fetching data
+          setIsLoading(false);
+          Alert.alert("Error", "Failed to fetch shop location.");
+        });
+      } catch (error) {
+        console.error("Error initializing data:", error);
+      } finally {
+        setIsLoading(false); // Ensure loading ends
+      }
+    };
+  
+    initializeData();
   }, [request.id, userLocation]);
 
   const fetchRoute = async (startCoords, endCoords) => {
@@ -65,28 +87,35 @@ const UserRequestTrackingScreen = ({ route, navigation }) => {
         <Ionicons name="arrow-back" size={24} color="#000" />
       </TouchableOpacity>
       <MapView
-        style={styles.map}
+       style={styles.map}
         initialRegion={{
-          latitude: userLocation.latitude,
+    latitude: userLocation.latitude,
           longitude: userLocation.longitude,
           latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        }}
+         longitudeDelta: 0.05,
+       }}
       >
-        {userLocation && (
-          <Marker coordinate={userLocation} title="Your Location" pinColor="purple" />
-        )}
-        {shopLocation && (
+       {userLocation && (
+         <Marker
+           coordinate={{
+             latitude: userLocation.latitude,
+             longitude: userLocation.longitude,
+           }}
+            title="Your Location"
+            pinColor="purple"
+         />
+       )}
+       {shopLocation && (
           <Marker
             coordinate={{
               latitude: shopLocation.latitude,
               longitude: shopLocation.longitude,
             }}
-            title="Shop Location"
-            pinColor="blue"
+            title="Destination"
+            pinColor="yellow"
           />
-        )}
-        {routeCoordinates.length > 0 && (
+       )}
+       {routeCoordinates.length > 0 && (
           <Polyline
             coordinates={routeCoordinates}
             strokeWidth={4}
