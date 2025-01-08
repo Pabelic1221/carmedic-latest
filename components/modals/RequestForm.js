@@ -61,7 +61,7 @@ const RequestForm = ({ visible, onClose, shopId, specialties, userAddress }) => 
     console.log("Car Model:", carModel);
     console.log("Description:", description);
     console.log("Specific Problem:", selectedSpecialty);
-    console.log("User  Address:", userAddressState);
+    console.log("User Address:", userAddressState);
     console.log("Selected Location:", selectedLocation);
 
     // Validate input fields
@@ -117,7 +117,7 @@ const RequestForm = ({ visible, onClose, shopId, specialties, userAddress }) => 
                 onChangeText={setCarModel}
               />
 
-              <Text style={[styles.label, styles.textArea]}>Additional Information</Text>
+              <Text style={[styles.label, styles.textArea]}>Additional Details</Text>
               <TextInput
                 style={styles.input}
                 placeholder="ex. My car won't start."

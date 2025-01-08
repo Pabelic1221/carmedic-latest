@@ -28,7 +28,7 @@ const RequestRescueScreen = () => {
   const userLocation = useSelector(
     (state) => state.userLocation.currentLocation
   );
-  console.log("User Location:", userLocation);
+  console.log("User  Location:", userLocation);
 
   useEffect(() => {
     setLoading(loading);
@@ -39,8 +39,8 @@ const RequestRescueScreen = () => {
   }, [dispatch]);
 
   const fitAllMarkers = () => {
-    if (shops.length > 0 && mapRef.current) {
-      const coordinates = shops.map((shop) => ({
+    if (filteredShops.length > 0 && mapRef.current) {
+      const coordinates = filteredShops.map((shop) => ({
         latitude: shop.latitude,
         longitude: shop.longitude,
       }));
@@ -87,19 +87,19 @@ const RequestRescueScreen = () => {
           }}
           style={styles.shopImage}
         />
-  
+
         {/* Shop Details */}
         <View style={styles.shopDetails}>
           {/* Shop Name */}
-          <Text style={[styles.shopName, item.hasSelectedSpecialty && { fontWeight: 'bold' }]}>
+          <Text style={styles.shopName}>
             {item.shopName}
           </Text>
-  
+
           {/* Shop Address */}
           <Text style={styles.shopAddress} numberOfLines={2} ellipsizeMode="tail">
             {item.address}
           </Text>
-  
+
           {/* Rating and Reviews */}
           <View style={styles.ratingContainer}>
             <Ionicons name="star" size={18} color="#FFD700" />
@@ -108,12 +108,12 @@ const RequestRescueScreen = () => {
               {item.reviewCount <= 1 ? "review" : "reviews"})
             </Text>
           </View>
-  
+
           {/* Distance Text with Conditional Color */}
           <Text
             style={[
               styles.distanceText,
-              item.distance < 10 ? styles.distanceGreen : styles.distanceRed, // Conditional styling
+              item.distance < 10 ? styles.distanceGreen : styles.distanceRed,
             ]}
           >
             {item.distance.toFixed(2)} km away
@@ -150,7 +150,7 @@ const RequestRescueScreen = () => {
           longitudeDelta: 0.05,
         }}
         loadingEnabled={true}
-        showsUserLocation={true}
+        showsUser Location={true}
         followsUserLocation={true}
       >
         {filteredShops.map((shop) => {
@@ -162,7 +162,7 @@ const RequestRescueScreen = () => {
               coordinate={{ longitude, latitude }}
               title={shop.shopName}
               description={shop.address}
-              pinColor={shop.hasSelectedSpecialty ? "yellow" : "purple"}
+              pinColor="yellow" // Only yellow pins for shops with selected specialty
               onPress={() => handleMarkerPress(shop)}
             />
           );
@@ -185,19 +185,15 @@ const RequestRescueScreen = () => {
 
   const filteredShops = useMemo(() => {
     return shops
+      .filter((shop) => 
+        selectedSpecialty ? shop.specialties?.includes(selectedSpecialty) : true
+      )
       .map((shop) => ({
         ...shop,
         distance: getDistance(userLocation, shop),
-        hasSelectedSpecialty: selectedSpecialty
-          ? shop.specialties?.includes(selectedSpecialty) || false
-          : true,
       }))
-      .sort((a, b) => {
-        if (a.hasSelectedSpecialty && !b.hasSelectedSpecialty) return -1;
-        if (!a.hasSelectedSpecialty && b.hasSelectedSpecialty) return 1;
-        return a.distance - b.distance;
-      })
-      .slice(0, 5);
+      .filter((shop) => shop.distance <= 10) // Filter shops within 10 km
+      .sort((a, b) => a.distance - b.distance);
   }, [shops, userLocation, selectedSpecialty]);
 
   return (
@@ -210,7 +206,7 @@ const RequestRescueScreen = () => {
           style={styles.picker}
           itemStyle={{ fontSize: 10 }}
         >
-          <Picker.Item label="All Specialties" value="" labelStyle={{ fontSize: 12 }}/>
+          <Picker.Item label="Select Specialty" value="" labelStyle={{ fontSize: 12 }}/>
           <Picker.Item label="Oil Change and Filter Replacement" value="Oil Change and Filter Replacement" labelStyle={{ fontSize: 10 }}/>
           <Picker.Item label="Computerized Engine Diagnostics" value="Computerized Engine Diagnostics" labelStyle={{ fontSize: 10 }}/>
           <Picker.Item label="Brake Pad and Rotor Replacement" value="Brake Pad and Rotor Replacement" labelStyle={{ fontSize: 10 }}/>
@@ -224,18 +220,13 @@ const RequestRescueScreen = () => {
         </Picker>
       </View>
       {renderMapView()}
-      {/* Legend for Pin Colors (placed below the map) */}
-        <View style={styles.legendContainer}>
-          <Text style={styles.legendTitle}>Legend</Text>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendColor, { backgroundColor: 'yellow' }]} />
-            <Text style={styles.legendText}>Shops with Selected Specialty</Text>
-          </View>
-          <View style={styles.legendItem}>
-           <View style={[styles.legendColor, { backgroundColor: 'purple' }]} />
-            <Text style={styles.legendText}>Shops without Selected Specialty</Text>
-          </View>
+      <View style={styles.legendContainer}>
+        <Text style={styles.legendTitle}>Legend</Text>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendColor, { backgroundColor: 'yellow' }]} />
+          <Text style={styles.legendText}>Shops with Selected Specialty</Text>
         </View>
+      </View>
       <FlatList
         ref={flatListRef}
         style={styles.shopList}
@@ -285,9 +276,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#777",
     marginTop: 5,
-    flexShrink: 1, // Allow text to wrap
-    numberOfLines: 2, // Limit to 2 lines
-    ellipsizeMode: "tail", // Add ellipsis if text overflows
+    flexShrink: 1,
+    numberOfLines: 2,
+    ellipsizeMode: "tail",
   },
   shopDetails: {
     flex: 1,
@@ -381,7 +372,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   legendText: {
-    fontSize: 12,
+    fontSize: 15,
     color: "#777",
   },
 });
