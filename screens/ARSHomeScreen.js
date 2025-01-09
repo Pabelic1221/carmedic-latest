@@ -9,7 +9,7 @@ import {
   Image,
 } from "react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import MapView, { Marker, Polyline } from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import { useSelector, useDispatch } from "react-redux";
 import RequestTicket from "../components/modals/RequestTicket";
 import ShopAppBar from "./ShopAppBar";
@@ -18,71 +18,105 @@ import { useNavigation } from "@react-navigation/native";
 import TicketListener from "../components/map/Shops/TicketListener";
 import { setRequestLocation } from "../redux/requests/requests";
 import { fetchAllRequests } from "../redux/requests/requestsThunk";
-import { updateDoc, doc } from "firebase/firestore";
-import { db } from "../firebase";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db } from '../firebase';
+import { getAuth } from "firebase/auth";
+
 
 
 const ARSHomeScreen = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const mapRef = useRef(null); // Step 1: Create the mapRef
+  const mapRef = useRef(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [isLoading, setLoading] = useState(null);
+  const [isLoading, setLoading] = useState(true);
+  const [shopLocation, setShopLocation] = useState(null);
 
   const { requests, loading } = useSelector((state) => state.requests);
 
-  const location = useSelector((state) => state.userLocation.currentLocation);
-  const userLocation = useMemo(() => location, [location]);
   const handleRequestPress = (request) => {
     setSelectedRequest(request);
     setModalVisible(true);
   };
+
   const handleCloseModal = () => {
     setModalVisible(false);
     setSelectedRequest(null);
   };
+
   const handleInitRescue = (request) => {
     dispatch(setRequestLocation(request));
     navigation.navigate("OngoingRequest", { request });
   };
-  useEffect(() => {
-    dispatch(fetchAllRequests());
-  }, [dispatch]);
-  useEffect(() => {
-    setLoading(loading);
-  }, [loading]);
 
-  const renderMapView = () => {
-    if (
-      !userLocation ||
-      !userLocation.latitude ||
-      !userLocation.longitude ||
-      isLoading ||
-      !requests.length
-    ) {
-      return (
-        <Text>Map loading... Please ensure location services are enabled.</Text>
-      );
+const fetchShopCoordinates = async () => {
+  try {
+    // Get the currently logged-in user's ID
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      console.error("No user is logged in.");
+      return;
     }
 
+    const shopId = currentUser.uid; // Assuming the shop ID matches the logged-in user's UID
+
+    // Fetch the shop document from Firestore
+    const shopDoc = await getDoc(doc(db, "shops", shopId));
+    if (shopDoc.exists()) {
+      const { latitude, longitude } = shopDoc.data();
+      setShopLocation({ latitude, longitude });
+      console.log("Shop location:", { latitude, longitude });
+    } else {
+      console.error("No shop data found!");
+    }
+  } catch (error) {
+    console.error("Error fetching shop coordinates:", error);
+  } finally {
+    setLoading(false); // Ensure loading state is updated
+  }
+};
+
+
+  useEffect(() => {
+    fetchShopCoordinates();
+    dispatch(fetchAllRequests());
+  }, [dispatch]);
+
+  const renderMapView = () => {
+    if (isLoading || !shopLocation) {
+      return (
+        <Text>Loading map... Please ensure location services are enabled.</Text>
+      );
+    }
+  
     return (
       <MapView
         style={styles.map}
         initialRegion={{
-          latitude: userLocation.latitude,
-          longitude: userLocation.longitude,
+          latitude: shopLocation.latitude,
+          longitude: shopLocation.longitude,
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         }}
-        showsUserLocation={true}
+        showsUserLocation={false}
         loadingEnabled={true}
-        loadingIndicatorColor="#666666"
-        loadingBackgroundColor="#eeeeee"
-        moveOnMarkerPress={false}
         showsCompass={true}
-        showsPointsOfInterest={false}
       >
+        {/* Shop's location marker */}
+        <Marker
+          coordinate={{
+            latitude: shopLocation.latitude,
+            longitude: shopLocation.longitude,
+          }}
+          title="Your Shop Location"
+          description="This is the location of your shop."
+          pinColor="yellow" // Yellow pin for shop location
+        />
+  
+        {/* Request markers */}
         {requests.map((request) => (
           <Marker
             key={request.id}
@@ -105,6 +139,7 @@ const ARSHomeScreen = () => {
       </MapView>
     );
   };
+  
 
   return (
     <TicketListener>
@@ -113,9 +148,8 @@ const ARSHomeScreen = () => {
         {renderMapView()}
         <Text style={styles.heading}>Pending Requests</Text>
         <FlatList
-          style={styles.requestList}
-          data={requests}
-          keyExtractor={(item) => item.id}
+         data={requests}
+         keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.requestItem}>
               <View style={styles.requestInfo}>
@@ -125,7 +159,7 @@ const ARSHomeScreen = () => {
                       ? item.profilePicUrl
                       : "https://via.placeholder.com/50",
                   }}
-                  style={styles.requestImage}
+                 style={styles.requestImage}
                 />
                 <View style={styles.requestDetails}>
                   <Text style={styles.requestName}>
@@ -143,15 +177,21 @@ const ARSHomeScreen = () => {
                   const request = item;
                   if (request.state === "accepted") {
                     handleInitRescue(request);
-                  } else {
-                    handleRequestPress(request);
-                  }
+                 } else {
+                   handleRequestPress(request);
+                 }
                 }}
               >
                 <Ionicons name="arrow-forward" size={24} color="#000" />
               </TouchableOpacity>
             </View>
           )}
+         ListEmptyComponent={() => (
+           <View style={styles.emptyContainer}>
+             <Text style={styles.emptyText}>No Request so far</Text>
+           </View>
+         )}
+          style={styles.requestList}
         />
         <Modal
           visible={isModalVisible}
@@ -169,12 +209,12 @@ const ARSHomeScreen = () => {
                   state: "accepted",
                   timestamp: new Date().toISOString(),
                 })
-                .then(() => {
-                  navigation.navigate("OngoingRequest", { request });
-                })
-                .catch((error) => {
-                  console.error("Error updating request state:", error);
-                });
+                  .then(() => {
+                    navigation.navigate("OngoingRequest", { request });
+                  })
+                  .catch((error) => {
+                    console.error("Error updating request state:", error);
+                  });
               }}
             />
           ) : (
@@ -187,6 +227,7 @@ const ARSHomeScreen = () => {
     </TicketListener>
   );
 };
+
 
 export default ARSHomeScreen;
 const styles = StyleSheet.create({
@@ -274,4 +315,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: "scroll",
   },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#555',
+  },
+  
 });

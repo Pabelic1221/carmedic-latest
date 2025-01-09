@@ -4,7 +4,7 @@ import { db } from "../../firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-export default function EndTicket({ visible, request, onClose, navigation }) {
+export default function EndTicket({ request, onClose, navigation }) {
   const [loading, setLoading] = useState(false);
 
   // Accept the request and update its state in Firestore

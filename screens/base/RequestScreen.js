@@ -42,7 +42,7 @@ const RequestScreen = ({ entities, ModalElement, children }) => {
                 coordinate={{ longitude, latitude }}
                 title={shop.shopName}
                 description={shop.address}
-                pinColor="purple"
+                pinColor="yellow"
               />
             );
           }

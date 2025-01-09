@@ -21,7 +21,7 @@ import {
 import EndTicket from "../components/modals/endTicketModal";
 import { useNavigation } from "@react-navigation/native";
 import { db, auth } from "../firebase";
-import { doc, setDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 const getDistance = (coord1, coord2) => {
@@ -84,7 +84,7 @@ const OngoingRequestScreen = ({ route }) => {
     (state) => state.requests.requestLocation
   );
   const shopLocation = useSelector((state) => state.requests.shopLocation);
-  const { currentUser  } = useSelector((state) => state.user);
+  const { currentUser } = useSelector((state) => state.user);
 
   const destination = useMemo(
     () =>
@@ -98,22 +98,38 @@ const OngoingRequestScreen = ({ route }) => {
 
   const lastLocation = useRef(userLocation);
 
-  // Load all necessary data asynchronously
   useEffect(() => {
     const initializeData = async () => {
       try {
-        // Request permissions and get initial user location
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
           console.error("Location permissions not granted");
           return;
         }
 
-        const currentLocation = await Location.getCurrentPositionAsync({});
-        const { latitude, longitude } = currentLocation.coords;
-        dispatch(actions.setCurrentLocation({ latitude, longitude }));
+        let latitude, longitude;
 
-        // Fetch route if not already available
+        // Fetch shop's location from Firestore if it's a shop
+        if (currentUser?.role === "Shop") {
+          const shopRef = doc(db, "shops", auth.currentUser.uid);
+          const shopSnapshot = await getDoc(shopRef);
+          if (shopSnapshot.exists()) {
+            const shopData = shopSnapshot.data();
+            latitude = shopData?.latitude ?? 0; // Default to 0 if not present
+            longitude = shopData?.longitude ?? 0; // Default to 0 if not present
+            dispatch(actions.setCurrentLocation({ latitude, longitude }));
+          } else {
+            console.error("Shop not found in Firestore");
+          }
+        } else {
+          // Get user's current location if not a shop
+          const currentLocation = await Location.getCurrentPositionAsync({});
+          latitude = currentLocation.coords.latitude;
+          longitude = currentLocation.coords.longitude;
+          dispatch(actions.setCurrentLocation({ latitude, longitude }));
+        }
+
+        // Fetch route if destination is set
         if (destination) {
           await fetchAndDispatchRoute(
             { latitude, longitude },
@@ -122,7 +138,7 @@ const OngoingRequestScreen = ({ route }) => {
           );
         }
 
-        // Set Firestore data for shops
+        // Set Firestore data for shops if needed
         if (currentUser ?.role === "Shop") {
           const rescueDoc = doc(db, "shopOnRescue", request.id);
           await setDoc(
@@ -131,9 +147,9 @@ const OngoingRequestScreen = ({ route }) => {
               userId: request.userId,
               storeId: auth.currentUser .uid,
               state: "ongoing",
-              longitude,
               latitude,
-              timestamp: new Date().toISOString()
+              longitude,
+              timestamp: new Date().toISOString(),
             },
             { merge: true }
           );
@@ -141,18 +157,12 @@ const OngoingRequestScreen = ({ route }) => {
       } catch (error) {
         console.error("Error initializing data:", error);
       } finally {
-        setIsLoading(false); // Ensure loading ends
+        setIsLoading(false);
       }
     };
 
     initializeData();
-  }, [
-    dispatch,
-    destination,
-    rescueRoute.length,
-    currentUser  ?.role,
-    request.id,
-  ]);
+  }, [dispatch, destination, rescueRoute.length, currentUser ?.role, request.id]);
 
   // Location tracking and Firestore updates
   useEffect(() => {
@@ -173,7 +183,7 @@ const OngoingRequestScreen = ({ route }) => {
             if (distance > 100) {
               dispatch(actions.setCurrentLocation(newLocation));
 
-              if (currentUser  ?.role === "Shop") {
+              if (currentUser ?.role === "Shop") {
                 await updateDoc(doc(db, "shopOnRescue", request.id), {
                   latitude,
                   longitude,
@@ -192,13 +202,10 @@ const OngoingRequestScreen = ({ route }) => {
 
     trackLocation();
     return () => locationSubscription?.remove();
-  }, [dispatch, destination, request.id, currentUser  ?.role]);
+  }, [dispatch, destination, request.id, currentUser ?.role]);
 
   const handleEndRequest = () => setModalVisible(true);
-
-  const handleCloseModal = () => {
-    setModalVisible(false);
-  };
+  const handleCloseModal = () => setModalVisible(false);
 
   const handleConfirmEndRequest = async () => {
     try {
@@ -207,16 +214,16 @@ const OngoingRequestScreen = ({ route }) => {
         state: "ended",
         timestamp: new Date().toISOString(),
       });
-  
-      if (currentUser  ?.role === "Shop") {
+
+      if (currentUser ?.role === "Shop") {
         const rescueDoc = doc(db, "shopOnRescue", request.id);
         await updateDoc(rescueDoc, {
           state: "ended",
           timestamp: new Date().toISOString(),
         });
       }
-  
-      navigation.goBack(); // This will close the OngoingRequestScreen
+
+      navigation.goBack();
     } catch (error) {
       console.error("Error updating request state:", error);
     }
@@ -236,66 +243,66 @@ const OngoingRequestScreen = ({ route }) => {
         <Text style={styles.headerTitle}>Ongoing Request</Text>
       </View>
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-       <Ionicons name="arrow-back" size={24} color="#fff" />
+        <Ionicons name="arrow-back" size={24} color="#fff" />
       </TouchableOpacity>
       <MapView
-         style={styles.map}
-         initialRegion={{
-           latitude: parseFloat(userLocation.latitude), // Ensure this is a number
-           longitude: parseFloat(userLocation.longitude), // Ensure this is a number
-           latitudeDelta: 0.05,
-           longitudeDelta: 0.05,
-         }}
-        >
-         {userLocation && (
-        <Marker
-             coordinate={{
-               latitude: parseFloat(userLocation.latitude), // Convert to number
-               longitude: parseFloat(userLocation.longitude), // Convert to number
-             }}
-             title="Your Location"
-             pinColor="yellow"
-           />
-         )}
-         {destination && (
+        style={styles.map}
+        initialRegion={{
+          latitude: userLocation?.latitude || 0, // Add fallback if undefined
+          longitude: userLocation?.longitude || 0, // Add fallback if undefined
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        }}
+      >
+        {userLocation && (
           <Marker
-             coordinate={{
-                latitude: parseFloat(destination.latitude), // Convert to number
-                longitude: parseFloat(destination.longitude), // Convert to number
-             }}
-              title={"Destination"}
-              pinColor="purple"
-            />
-         )}
-         {rescueRoute.length > 0 && (       
-           <Polyline
-             coordinates={rescueRoute.map(coord => ({
-               latitude: parseFloat(coord.latitude), // Ensure this is a number
-               longitude: parseFloat(coord.longitude), // Ensure this is a number
-             }))}
-             strokeWidth={4}
-             strokeColor="blue"
-            />
-          )}
-        </MapView>
+            coordinate={{
+              latitude: userLocation.latitude,
+              longitude: userLocation.longitude,
+            }}
+            title="Your Location"
+            pinColor="yellow"
+          />
+        )}
+        {destination && (
+          <Marker
+            coordinate={{
+              latitude: destination.latitude,
+              longitude: destination.longitude,
+            }}
+            title="Destination"
+            pinColor="purple"
+          />
+        )}
+        {rescueRoute.length > 0 && (
+          <Polyline
+            coordinates={rescueRoute.map((coord) => ({
+              latitude: coord.latitude,
+              longitude: coord.longitude,
+            }))}
+            strokeWidth={4}
+            strokeColor="blue"
+          />
+        )}
+      </MapView>
       <TouchableOpacity style={styles.fab} onPress={handleEndRequest}>
         <Ionicons name="checkmark" size={24} color="#fff" />
-      </TouchableOpacity>
+      </ TouchableOpacity>
       <Modal
-       visible={isModalVisible}
-       transparent
-       animationType="slide"
-       onRequestClose={handleCloseModal} // This will close the modal
+        visible={isModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={handleCloseModal}
       >
-       <TouchableWithoutFeedback onPress={handleCloseModal}>
+        <TouchableWithoutFeedback onPress={handleCloseModal}>
           <View style={styles.modalBackground}>
-          <EndTicket
-            visible={isModalVisible}
-            request={request}
-            onClose={()=>setModalVisible(false)}
-            onConfirm={handleConfirmEndRequest}
-            navigation={navigation} // Pass the navigation prop here
-          />
+            <EndTicket
+              visible={isModalVisible}
+              request={request}
+              onClose={() => setModalVisible(false)}
+              onConfirm={handleConfirmEndRequest}
+              navigation={navigation}
+            />
           </View>
         </TouchableWithoutFeedback>
       </Modal>
@@ -326,7 +333,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   backButton: {
-    backgroundColor: '#6200ee', // Optional: Add a background color for visibility
+    backgroundColor: '#6200ee',
     borderRadius: 30,
     padding: 10,
     elevation: 5,

@@ -62,7 +62,7 @@ const LoginScreen = () => {
         password
       );
       const user = userCredentials.user;
-      console.log("User  logged in");
+      console.log("User logged in");
       if (user.emailVerified) {
         dispatch(fetchCurrentUser ());
         dispatch(updateUserStatus({ userId: user.uid, status: "online" }));
