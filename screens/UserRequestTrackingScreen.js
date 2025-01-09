@@ -14,6 +14,7 @@ const UserRequestTrackingScreen = ({ route, navigation }) => {
   const [shopLocation, setShopLocation] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [routeCoordinates, setRouteCoordinates] = useState([]); // State for route coordinates
+  const [distance, setDistance] = useState(0); // State for distance between user and shop
 
   useEffect(() => {
     const initializeData = async () => {
@@ -34,6 +35,7 @@ const UserRequestTrackingScreen = ({ route, navigation }) => {
         const unsubscribe = onSnapshot(doc(db, "shopOnRescue", request.id), (doc) => {
           if (doc.exists()) {
             const data = doc.data();
+            console.log("Shop location data:", data); // Log the shop location data
             setShopLocation(data);
             fetchRoute(userLocation, data); // Fetch the route when shop location is available
             setIsLoading(false);
@@ -68,9 +70,24 @@ const UserRequestTrackingScreen = ({ route, navigation }) => {
         })
       );
       setRouteCoordinates(route);
+      calculateDistance(startCoords, endCoords);
     } catch (error) {
       console.error("Error fetching route:", error);
     }
+  };
+
+  const calculateDistance = (startCoords, endCoords) => {
+    const lat1 = startCoords.latitude;
+    const lon1 = startCoords.longitude;
+    const lat2 = endCoords.latitude;
+    const lon2 = endCoords.longitude;
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    setDistance(distance);
   };
 
   if (isLoading) {
@@ -92,8 +109,8 @@ const UserRequestTrackingScreen = ({ route, navigation }) => {
     latitude: userLocation.latitude,
           longitude: userLocation.longitude,
           latitudeDelta: 0.05,
-         longitudeDelta: 0.05,
-       }}
+          longitudeDelta: 0.05,
+        }}
       >
        {userLocation && (
          <Marker
@@ -101,8 +118,8 @@ const UserRequestTrackingScreen = ({ route, navigation }) => {
              latitude: userLocation.latitude,
              longitude: userLocation.longitude,
            }}
-            title="Your Location"
-            pinColor="purple"
+           title="Your Location"
+           pinColor="purple"
          />
        )}
        {shopLocation && (
@@ -126,6 +143,11 @@ const UserRequestTrackingScreen = ({ route, navigation }) => {
       <Text style={styles.requestDetails}>
        Request ID: {request.id} - <Text style={styles.boldText}>{request.state}</Text>
       </Text>
+      {shopLocation && (
+        <Text style={[styles.distanceText, { color: distance < 10 ? 'green' : 'red' }]}>
+          {distance.toFixed(2)} km away from <Text style={styles.shopName}>{shopLocation.storeId}</Text>
+        </Text>
+      )}
     </View>
   );
 };
@@ -142,7 +164,7 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "#fff",
     position: "absolute",
-    bottom: 20,
+    bottom: 60,
     left: 20,
     right: 20,
     borderRadius: 10,
@@ -159,6 +181,20 @@ const styles = StyleSheet.create({
   },
   boldText: {
     fontWeight: "bold",
+  },
+  distanceText: {
+    padding: 10,
+    backgroundColor: "#fff",
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
+    borderRadius: 10,
+    elevation: 5,
+  },
+  shopName: {
+    fontWeight: "bold",
+    color: "yellow",
   },
 });
 

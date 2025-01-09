@@ -63,12 +63,6 @@ export default function EndTicket({ request, onClose, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  modalBackground: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
   modalContainer: {
     width: "85%",
     padding: 20,
@@ -80,6 +74,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
+    zIndex: 1, // Add this line
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   closeButton: {
     alignSelf: "flex-end",

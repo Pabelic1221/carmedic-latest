@@ -117,7 +117,7 @@ const OngoingRequestScreen = ({ route }) => {
             const shopData = shopSnapshot.data();
             latitude = shopData?.latitude ?? 0; // Default to 0 if not present
             longitude = shopData?.longitude ?? 0; // Default to 0 if not present
-            dispatch(actions.setCurrentLocation({ latitude, longitude }));
+            dispatch(actions.setShopLocation({ latitude, longitude }));
           } else {
             console.error("Shop not found in Firestore");
           }
@@ -146,6 +146,7 @@ const OngoingRequestScreen = ({ route }) => {
             {
               userId: request.userId,
               storeId: auth.currentUser .uid,
+              shopName: currentUser ?.shopName,
               state: "ongoing",
               latitude,
               longitude,
@@ -285,26 +286,30 @@ const OngoingRequestScreen = ({ route }) => {
           />
         )}
       </MapView>
-      <TouchableOpacity style={styles.fab} onPress={handleEndRequest}>
+      <TouchableOpacity style={styles.fab} onPress={handleEndRequest }>
         <Ionicons name="checkmark" size={24} color="#fff" />
-      </ TouchableOpacity>
+      </TouchableOpacity>
       <Modal
-        visible={isModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={handleCloseModal}
+       visible={isModalVisible}
+       transparent
+       animationType="slide"
+       onRequestClose={handleCloseModal}
       >
         <TouchableWithoutFeedback onPress={handleCloseModal}>
-          <View style={styles.modalBackground}>
-            <EndTicket
-              visible={isModalVisible}
-              request={request}
-              onClose={() => setModalVisible(false)}
-              onConfirm={handleConfirmEndRequest}
-              navigation={navigation}
-            />
-          </View>
-        </TouchableWithoutFeedback>
+         <View style={styles.modalBackground}>
+           {isModalVisible && (
+              <View style={[styles.modalContent, { zIndex: 1 }]}>
+               <EndTicket
+                 visible={isModalVisible}
+                 request={request}
+                 onClose={() => setModalVisible(false)}
+                 onConfirm={handleConfirmEndRequest}
+                 navigation={navigation}
+               />
+             </View>
+           )}
+         </View>
+       </TouchableWithoutFeedback>
       </Modal>
     </SafeAreaView>
   );
@@ -350,6 +355,15 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 15,
     elevation: 5,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+    height: '60%',
+    zIndex: 1,
+    elevation: 10,
   },
   modalBackground: {
     flex: 1,

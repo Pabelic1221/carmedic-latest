@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,9 @@ import {
   Alert,
   Modal,
   TouchableWithoutFeedback,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Picker } from '@react-native-picker/picker'; // Import the Picker
 import MapView, { Marker } from "react-native-maps"; // Import MapView and Marker
@@ -21,13 +24,15 @@ const RequestForm = ({ visible, onClose, shopId, specialties, userAddress }) => 
   const [description, setDescription] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState(""); // State for selected specialty
   const [state] = useState("pending"); // Default state
-  const [userId] = useState(auth.currentUser ?.uid);
+  const [userId] = useState(auth.currentUser  ?.uid);
   const [userAddressState, setUserAddress] = useState(userAddress || ""); // Initialize to userAddress or empty string
   const [selectedLocation, setSelectedLocation] = useState({
     latitude: 37.78825, // Default latitude
     longitude: -122.4324, // Default longitude
   });
   const [locationMethod, setLocationMethod] = useState("currentLocation"); // "currentLocation" or "manualPinning"
+
+  const scrollViewRef = useRef(null);
 
   // Get current location when "Current Location" is selected
   useEffect(() => {
@@ -61,7 +66,7 @@ const RequestForm = ({ visible, onClose, shopId, specialties, userAddress }) => 
     console.log("Car Model:", carModel);
     console.log("Description:", description);
     console.log("Specific Problem:", selectedSpecialty);
-    console.log("User Address:", userAddressState);
+    console.log("User  Address:", userAddressState);
     console.log("Selected Location:", selectedLocation);
 
     // Validate input fields
@@ -98,82 +103,89 @@ const RequestForm = ({ visible, onClose, shopId, specialties, userAddress }) => 
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.modalBackground}>
           <TouchableWithoutFeedback>
-            <View style={styles.modalContent}>
- <Text style={styles.title}>Request Service</Text>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+              style={{ flex: 1 }}
+            >
+              <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollViewContent}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.title}>Request Service</Text>
 
-              <Text style={styles.label}>Vehicle Brand</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter vehicle brand"
-                value={carBrand}
-                onChangeText={setCarBrand}
-              />
+                  <Text style={styles.label}>Vehicle Brand</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="ex. Toyota"
+                    value={carBrand}
+                    onChangeText={setCarBrand}
+                  />
 
-              <Text style={styles.label}>Vehicle Model</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter vehicle model"
-                value={carModel}
-                onChangeText={setCarModel}
-              />
+                  <Text style={styles.label}>Vehicle Model</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="ex. Raize G variant"
+                    value={carModel}
+                    onChangeText={setCarModel}
+                  />
 
-              <Text style={[styles.label, styles.textArea]}>Additional Details</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="ex. My car won't start."
-                value={description}
-                onChangeText={setDescription}
-                multiline={true}
-              />
+                  <Text style={[styles.label, styles.textArea]}>Additional Details</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="ex. My car won't start."
+                    value={description}
+                    onChangeText={setDescription}
+                    multiline={true}
+                  />
 
-              <Text style={styles.label}>Select Specialty</Text>
-              <Picker
-                selectedValue={selectedSpecialty}
-                onValueChange={(itemValue) => setSelectedSpecialty(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Select a specialty" value="" />
-                {specialties.map((specialty, index) => (
-                  <Picker.Item key={index} label={specialty} value={specialty} />
-                ))}
-              </Picker>
-
-              <Text style={styles.label}>Select Location Method</Text>
-              <Picker
-                selectedValue={locationMethod}
-                onValueChange={(itemValue) => setLocationMethod(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Current Location" value="currentLocation" />
-                <Picker.Item label="Manual Map Pinning" value="manualPinning" />
-              </Picker>
-
-              {locationMethod === "manualPinning" && (
-                <>
-                  <Text style={styles.label}>Select Location</Text>
-                  <MapView
-                    style={styles.map}
-                    initialRegion={{
-                      latitude: selectedLocation.latitude,
-                      longitude: selectedLocation.longitude,
-                      latitudeDelta: 0.02,
-                      longitudeDelta: 0.02,
-                    }}
-                    onPress={handleMapPress}
+                  <Text style={styles.label}>Select Specialty</Text>
+                  <Picker
+                    selectedValue={selectedSpecialty}
+                    onValueChange={(itemValue) => setSelectedSpecialty(itemValue)}
+                    style={styles.picker}
                   >
-                    <Marker coordinate={selectedLocation} />
-                  </MapView>
-                </>
-              )}
+                    <Picker.Item label="Select a specialty" value="" />
+                    {specialties.map((specialty, index) => (
+                      <Picker.Item key={index} label={specialty} value={specialty} />
+                    ))}
+                  </Picker>
 
-              <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                <Text style={styles.submitButtonText}>Submit Request</Text>
-              </TouchableOpacity>
+                  <Text style={styles.label}>Select Location Method</Text>
+                  <Picker
+                    selectedValue={locationMethod}
+                    onValueChange={(itemValue) => setLocationMethod(itemValue)}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="Current Location" value="currentLocation" />
+                    <Picker.Item label="Manual Map Pinning" value="manualPinning" />
+                  </Picker>
 
-              <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
+                  {locationMethod === "manualPinning" && (
+                    <>
+                      <Text style={styles.label}>Select Location</Text>
+                      <MapView
+                        style={styles.map}
+                        initialRegion={{
+                          latitude: selectedLocation.latitude,
+                          longitude: selectedLocation.longitude,
+                          latitudeDelta: 0.02,
+                          longitudeDelta: 0.02,
+                        }}
+                        onPress={handleMapPress}
+                      >
+                        <Marker coordinate={selectedLocation} />
+                      </MapView>
+                    </>
+                  )}
+
+                  <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                    <Text style={styles.submitButtonText}>Submit Request</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </KeyboardAvoidingView>
           </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
@@ -184,16 +196,17 @@ const RequestForm = ({ visible, onClose, shopId, specialties, userAddress }) => 
 const styles = StyleSheet.create({
   modalBackground: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // Center vertically
+    alignItems: "center", // Center horizontally
     backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
   },
   modalContent: {
-    width: "80%",
+    width: "95%",
     backgroundColor: "white",
     borderRadius: 10,
     padding: 20,
-    elevation: 5,
+    elevation: 1,
+    alignSelf: 'center',
   },
   title: {
     fontSize: 24,
@@ -237,11 +250,17 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 5,
     alignItems: "center",
-  },
+ },
   cancelButtonText: {
     color: "white",
     fontWeight: "bold",
   },
+  scrollView: {
+    flex: 1,
+    contentContainerStyle: {
+      flexGrow: 1,
+    },
+  },
 });
 
-export default RequestForm
+export default RequestForm;
