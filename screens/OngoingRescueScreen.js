@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import {
   SafeAreaView,
-  Modal,
   StyleSheet,
   ActivityIndicator,
   View,
@@ -206,7 +205,6 @@ const OngoingRequestScreen = ({ route }) => {
   }, [dispatch, destination, request.id, currentUser ?.role]);
 
   const handleEndRequest = () => setModalVisible(true);
-  const handleCloseModal = () => setModalVisible(false);
 
   const handleConfirmEndRequest = async () => {
     try {
@@ -289,28 +287,15 @@ const OngoingRequestScreen = ({ route }) => {
       <TouchableOpacity style={styles.fab} onPress={handleEndRequest }>
         <Ionicons name="checkmark" size={24} color="#fff" />
       </TouchableOpacity>
-      <Modal
-       visible={isModalVisible}
-       transparent
-       animationType="slide"
-       onRequestClose={handleCloseModal}
-      >
-        <TouchableWithoutFeedback onPress={handleCloseModal}>
-         <View style={styles.modalBackground}>
-           {isModalVisible && (
-              <View style={[styles.modalContent, { zIndex: 1 }]}>
-               <EndTicket
-                 visible={isModalVisible}
-                 request={request}
-                 onClose={() => setModalVisible(false)}
-                 onConfirm={handleConfirmEndRequest}
-                 navigation={navigation}
-               />
-             </View>
-           )}
-         </View>
-       </TouchableWithoutFeedback>
-      </Modal>
+      {isModalVisible && (
+        <EndTicket
+          visible={isModalVisible}
+          request={request}
+          onClose={() => setModalVisible(false)}
+          onConfirm={handleConfirmEndRequest}
+          navigation={navigation}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -355,21 +340,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 15,
     elevation: 5,
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    width: '80%',
-    height: '60%',
-    zIndex: 1,
-    elevation: 10,
-  },
-  modalBackground: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });
 

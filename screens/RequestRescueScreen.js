@@ -29,7 +29,7 @@ const RequestRescueScreen = () => {
   const userLocation = useSelector(
     (state) => state.userLocation.currentLocation
   );
-  console.log("User Location:", userLocation);
+  console.log("User  Location:", userLocation);
 
   useEffect(() => {
     setLoading(loading);
@@ -71,58 +71,69 @@ const RequestRescueScreen = () => {
     }
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.shopItem}
-      onPress={() => {
-        navigation.navigate("Auto Repair Shop", { item });
-      }}
-    >
-      <View style={styles.shopInfo}>
-        {/* Shop Image */}
-        <Image
-          source={{
-            uri: item.profilePicUrl
-              ? item.profilePicUrl
-              : "https://via.placeholder.com/50",
-          }}
-          style={styles.shopImage}
-        />
+  const renderItem = ({ item }) => {
+    const isTopShop = topShops.some((shop) => shop.id === item.id);
 
-        {/* Shop Details */}
-        <View style={styles.shopDetails}>
-          {/* Shop Name */}
-          <Text style={styles.shopName}>
-            {item.shopName}
-          </Text>
+    return (
+      <TouchableOpacity
+        style={[styles.shopItem, isTopShop && styles.topShopItem]}
+        onPress={() => {
+          navigation.navigate("Auto Repair Shop", { item });
+        }}
+      >
+        <View style={styles.shopInfo}>
+          {/* Shop Image */}
+          <Image
+            source={{
+              uri: item.profilePicUrl
+                ? item.profilePicUrl
+                : "https://via.placeholder.com/50",
+            }}
+            style={styles.shopImage}
+          />
 
-          {/* Shop Address */}
-          <Text style={styles.shopAddress} numberOfLines={2} ellipsizeMode="tail">
-            {item.address}
-          </Text>
+          {/* Shop Details */}
+          <View style={styles.shopDetails}>
+            {/* Shop Name */}
+            <Text style={styles.shopName}>
+              {item.shopName}
+            </Text>
 
-          {/* Rating and Reviews */}
-          <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={18} color="#FFD700" />
-            <Text style={styles.shopRating}>
-              {item.averageRating?.toFixed(1) || "0.0"} ({item.reviewCount || 0}{" "}
-              {item.reviewCount <= 1 ? "review" : "reviews"})
+            {/* Shop Address */}
+            <Text style={styles.shopAddress} numberOfLines={2} ellipsizeMode="tail">
+              {item.address}
+            </Text>
+
+            {/* Rating and Reviews */}
+            <View style={styles.ratingContainer}>
+              <Ionicons name="star" size={18} color="#FFD700" />
+              <Text style={styles.shopRating}>
+                {item.averageRating?.toFixed(1) || "0.0"} ({item.reviewCount || 0}{" "}
+                {item.reviewCount <= 1 ? "review" : "reviews"})
+              </Text>
+            </View>
+
+            {/* Distance Text with Conditional Color */}
+            <Text
+              style={[
+                styles.distanceText,
+                item.distance < 10 ? styles.distanceGreen : styles.distanceRed,
+              ]}
+            >
+              {item.distance.toFixed(2)} km away
             </Text>
           </View>
-
-          {/* Distance Text with Conditional Color */}
-          <Text
-            style={[
-              styles.distanceText,
-              item.distance < 10 ? styles.distanceGreen : styles.distanceRed,
-            ]}
-          >
-            {item.distance.toFixed(2)} km away
-          </Text>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+
+        {/* Top Shop Badge */}
+        {isTopShop && (
+          <View style={styles.topShopBadge}>
+            <Text style={styles.topShopBadgeText}>Top Shop</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   const renderMapView = () => {
     if (
@@ -150,7 +161,7 @@ const RequestRescueScreen = () => {
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         }}
-        loading Enabled={true}
+        loadingEnabled={true}
         showsUserLocation={true}
         followsUserLocation={true}
       >
@@ -220,18 +231,24 @@ const RequestRescueScreen = () => {
       .sort((a, b) => a.distance - b.distance);
   }, [shops, userLocation, selectedSpecialties]);
 
+  const topShops = useMemo(() => {
+    return filteredShops
+      .sort((a, b) => b.averageRating - a.averageRating) // Sort by highest rating
+      .slice(0, 5); // Take the top 5
+  }, [filteredShops]);
+
   return (
     <SafeAreaView style={styles.container}>
       <AppBar />
       <TouchableOpacity
-       style={styles.filterContainer}
-       onPress={() => setIsModalVisible(true)}
+        style={styles.filterContainer}
+        onPress={() => setIsModalVisible(true)}
       >
         <Text style={styles.filterText}>
           {selectedSpecialties.length === 0
             ? "Select Specialties"
-           : `${selectedSpecialties.length} Specialties selected`}
-       </Text>
+            : `${selectedSpecialties.length} Specialties selected`}
+        </Text>
       </TouchableOpacity>
       <Modal
         isVisible={isModalVisible}
@@ -294,6 +311,10 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
+  topShopItem: {
+    borderColor: '#FFD700',
+    borderWidth: 2,
+  },
   shopInfo: {
     flexDirection: "row",
     alignItems: "center",
@@ -314,8 +335,6 @@ const styles = StyleSheet.create({
     color: "#777",
     marginTop: 5,
     flexShrink: 1,
-    numberOfLines: 2,
-    ellipsizeMode: "tail",
   },
   shopDetails: {
     flex: 1,
@@ -382,15 +401,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
   },
-  specialtyButton: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  specialtyText: {
-    fontSize: 16,
-    color: '#333',
-  },
   legendContainer: {
     padding: 10,
     backgroundColor: "#fff",
@@ -423,6 +433,18 @@ const styles = StyleSheet.create({
   legendText: {
     fontSize: 15,
     color: "#777",
+  },
+  topShopBadge: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: '#FFD700',
+    padding: 5,
+    borderRadius: 5,
+  },
+  topShopBadgeText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
 

@@ -28,37 +28,33 @@ export default function EndTicket({ request, onClose, navigation }) {
   };
 
   return (
-    <Modal visible={true} transparent animationType="slide">
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
-          {/* Close button */}
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#000" />
-          </TouchableOpacity>
-          {/* Modal Header */}
-          <Text style={styles.modalHeader}>End Ticket Session</Text>
-          <Text style={styles.message}>
-            Are you sure you want to end this ticket's session?
-          </Text>
-          {/* Accept and Decline Buttons */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, styles.acceptButton]}
-              onPress={() => handleRequest("ended")}
-              disabled={loading}
-            >
-              <Text style={styles.buttonText}>Yes</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, styles.declineButton]}
-              onPress={onClose}
-            >
-              <Text style={styles.buttonText}>No</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+    <View style={styles.modalContainer}>
+      {/* Close button */}
+      <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+        <Ionicons name="close" size={24} color="#000" />
+      </TouchableOpacity>
+      {/* Modal Header */}
+      <Text style={styles.modalHeader}>End Ticket Session</Text>
+      <Text style={styles.message}>
+        Are you sure you want to end this ticket's session?
+      </Text>
+      {/* Accept and Decline Buttons */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.button, styles.acceptButton]}
+          onPress={() => handleRequest("ended")}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>Yes</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.declineButton]}
+          onPress={onClose}
+        >
+          <Text style={styles.buttonText}>No</Text>
+        </TouchableOpacity>
       </View>
-    </Modal>
+    </View>
   );
 }
 
