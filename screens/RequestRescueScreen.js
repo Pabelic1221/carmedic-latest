@@ -15,12 +15,16 @@ import { useNavigation } from "@react-navigation/native";
 import MapView, { Marker } from "react-native-maps";
 import { fetchAllShops } from "../redux/shops/shopsThunk";
 import Modal from 'react-native-modal';
+import { Picker } from '@react-native-picker/picker'; // Updated import for Picker
 
 const RequestRescueScreen = () => {
   const navigation = useNavigation();
   const [isLoading, setLoading] = useState(true);
   const [selectedSpecialties, setSelectedSpecialties] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [locationMethod, setLocationMethod] = useState("currentLocation"); // New state for location method
+  const [selectedLocation, setSelectedLocation] = useState(null); // New state for selected location
+  const [currentUserLocation, setCurrentUserLocation] = useState(null); // New state for current user location
   const mapRef = useRef(null);
   const flatListRef = useRef(null);
   const dispatch = useDispatch();
@@ -136,10 +140,12 @@ const RequestRescueScreen = () => {
   };
 
   const renderMapView = () => {
+    const currentLocation = locationMethod === "manualPinning" && selectedLocation ? selectedLocation : userLocation;
+
     if (
-      !userLocation ||
-      !userLocation.latitude ||
-      !userLocation.longitude ||
+      !currentLocation ||
+      !currentLocation.latitude ||
+      !currentLocation.longitude ||
       isLoading
     ) {
       return (
@@ -156,14 +162,23 @@ const RequestRescueScreen = () => {
         ref={mapRef}
         style={styles.map}
         initialRegion={{
-          latitude: userLocation.latitude,
-          longitude: userLocation.longitude,
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude,
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         }}
         loadingEnabled={true}
         showsUserLocation={true}
         followsUserLocation={true}
+        onPress={(e) => {
+          if (locationMethod === "manualPinning") {
+            const { latitude, longitude } = e.nativeEvent.coordinate;
+            setSelectedLocation({ latitude, longitude });
+            console.log("Red Pin Location - Latitude:", latitude, "Longitude:", longitude); // Log the red pin's location
+            // Set the selected location as the current user location
+            setCurrentUserLocation({ latitude, longitude });
+          }
+        }}
       >
         {filteredShops.map((shop) => {
           const { longitude, latitude } = shop;
@@ -179,6 +194,14 @@ const RequestRescueScreen = () => {
             />
           );
         })}
+
+        {/* Render selected location marker if in manual pinning mode */}
+        {locationMethod === "manualPinning" && selectedLocation && (
+          <Marker
+            coordinate={selectedLocation}
+            pinColor="red" // Color for the manually pinned location
+          />
+        )}
       </MapView>
     );
   };
@@ -217,6 +240,8 @@ const RequestRescueScreen = () => {
   };
 
   const filteredShops = useMemo(() => {
+    const referenceLocation = locationMethod === "manualPinning" && selectedLocation ? selectedLocation : userLocation;
+
     return shops
       .filter((shop) => 
         selectedSpecialties.length > 0 
@@ -225,11 +250,11 @@ const RequestRescueScreen = () => {
       )
       .map((shop) => ({
         ...shop,
-        distance: getDistance(userLocation, shop),
+        distance: getDistance(referenceLocation, shop),
       }))
       .filter((shop) => shop.distance <= 10) // Filter shops within 10 km
       .sort((a, b) => a.distance - b.distance);
-  }, [shops, userLocation, selectedSpecialties]);
+  }, [shops, userLocation, selectedSpecialties, selectedLocation, locationMethod]);
 
   const topShops = useMemo(() => {
     return filteredShops
@@ -240,6 +265,16 @@ const RequestRescueScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <AppBar />
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={locationMethod}
+          onValueChange={(itemValue) => setLocationMethod(itemValue)}
+          style={styles.picker}
+        >
+          <Picker.Item label="Current Location" value="currentLocation" />
+          <Picker.Item label="Manual Map Pinning" value="manualPinning" />
+        </Picker>
+      </View>
       <TouchableOpacity
         style={styles.filterContainer}
         onPress={() => setIsModalVisible(true)}
@@ -247,7 +282,7 @@ const RequestRescueScreen = () => {
         <Text style={styles.filterText}>
           {selectedSpecialties.length === 0
             ? "Select Specialties"
-            : '${selectedSpecialties.length} Specialties selected'}
+            : "${selectedSpecialties.length} Specialties selected"} 
         </Text>
       </TouchableOpacity>
       <Modal
@@ -445,6 +480,30 @@ const styles = StyleSheet.create({
   topShopBadgeText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  pickerContainer: {
+    backgroundColor: "#fff",
+    marginHorizontal: "5%",
+    borderRadius: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+    width: "90%",
+    alignSelf: "center",
+    marginBottom: 10,
+  },
+  pickerLabel: {
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  pickerOption: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  pickerText: {
+    fontSize: 16,
   },
 });
 
