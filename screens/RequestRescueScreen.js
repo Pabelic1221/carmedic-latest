@@ -24,7 +24,6 @@ const RequestRescueScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [locationMethod, setLocationMethod] = useState("currentLocation"); // New state for location method
   const [selectedLocation, setSelectedLocation] = useState(null); // New state for selected location
-  const [currentUserLocation, setCurrentUserLocation] = useState(null); // New state for current user location
   const mapRef = useRef(null);
   const flatListRef = useRef(null);
   const dispatch = useDispatch();
@@ -175,8 +174,6 @@ const RequestRescueScreen = () => {
             const { latitude, longitude } = e.nativeEvent.coordinate;
             setSelectedLocation({ latitude, longitude });
             console.log("Red Pin Location - Latitude:", latitude, "Longitude:", longitude); // Log the red pin's location
-            // Set the selected location as the current user location
-            setCurrentUserLocation({ latitude, longitude });
           }
         }}
       >
@@ -282,7 +279,7 @@ const RequestRescueScreen = () => {
         <Text style={styles.filterText}>
           {selectedSpecialties.length === 0
             ? "Select Specialties"
-            : "${selectedSpecialties.length} Specialties selected"} 
+            : `${selectedSpecialties.length} Specialties selected`} 
         </Text>
       </TouchableOpacity>
       <Modal
