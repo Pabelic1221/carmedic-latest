@@ -66,7 +66,7 @@ const RequestForm = ({ visible, onClose, shopId, specialties, userAddress }) => 
     console.log("Car Model:", carModel);
     console.log("Description:", description);
     console.log("Specific Problem:", selectedSpecialty);
-    console.log("User  Address:", userAddressState);
+    console.log("User Address:", userAddressState);
     console.log("Selected Location:", selectedLocation);
 
     // Validate input fields
@@ -207,6 +207,7 @@ const styles = StyleSheet.create({
     padding: 20,
     elevation: 1,
     alignSelf: 'center',
+    margin: 40
   },
   title: {
     fontSize: 24,

@@ -29,7 +29,7 @@ const RequestRescueScreen = () => {
   const userLocation = useSelector(
     (state) => state.userLocation.currentLocation
   );
-  console.log("User  Location:", userLocation);
+  console.log("User Location:", userLocation);
 
   useEffect(() => {
     setLoading(loading);
@@ -247,7 +247,7 @@ const RequestRescueScreen = () => {
         <Text style={styles.filterText}>
           {selectedSpecialties.length === 0
             ? "Select Specialties"
-            : `${selectedSpecialties.length} Specialties selected`}
+            : '${selectedSpecialties.length} Specialties selected'}
         </Text>
       </TouchableOpacity>
       <Modal
