@@ -169,3 +169,29 @@ REACT_APP_FIREBASE_APP_ID=YOUR_APP_ID
 Refer to the Firebase documentation for more details on setting up and using Firebase in your project.
 
 By following these steps, you should have Firebase set up and configured correctly for the CarMedic project.
+
+## Software Installation Requirements
+
+To ensure CarMedic runs smoothly, please make sure your system meets the following software requirements:
+
+### Operating System
+
+- **Windows**: Windows 10 or later
+- **macOS**: macOS 10.15 (Catalina) or later
+- **Linux**: Any modern distribution that supports Node.js
+
+### Android Version
+
+If you are using CarMedic on an Android device, ensure your device meets the following requirements:
+
+- **Android OS**: Android 8.0 (Oreo) or later
+- **RAM**: Minimum 2GB
+- **Storage**: Minimum 100MB of free space
+
+### Additional Software
+
+- **Node.js**: Version 14.x or later
+- **npm**: Version 6.x or later (included with Node.js)
+- **Git**: Version control system to clone the repository
+
+Ensure all the above software is installed and up to date before proceeding with the installation and usage of CarMedic.
