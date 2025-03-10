@@ -101,27 +101,6 @@ Refer to the `package.json` file for a complete list of dependencies and their v
 
 ### Database Setup
 
-If your project requires a database, follow the setup instructions for your specific database. For example, if using MongoDB:
-
-1. Install MongoDB from [mongodb.com](https://www.mongodb.com/).
-2. Start the MongoDB server:
-    ```bash
-    mongod
-    ```
-
-### Environment Variables
-
-Ensure you have all necessary environment variables set up. Create a `.env` file in the project root and add your variables there. For example:
-
-```
-DB_CONNECTION=mongodb://localhost:27017/carmedic
-PORT=3000
-```
-
-Refer to the project documentation for a complete list of required environment variables.
-
-### Database Setup
-
 CarMedic uses Firebase as its database. Follow these steps to set up Firebase for your project:
 
 1. Go to the [Firebase Console](https://console.firebase.google.com/).
