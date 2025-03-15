@@ -150,7 +150,7 @@ We welcome contributions! Follow these steps to contribute:
 
 ## Contact
 
-For issues or suggestions, open an issue on GitHub or contact us at nacua.regner@gmail.com / paullinejoy0802@gmail.com / shanebaguhin9@gmail.com or pabelicjush@gmail.com.
+For issues or suggestions, open an issue on GitHub or contact us at nacua.regner@gmail.com / paullinejoy0802@gmail.com / shanebaguhin9@gmail.com or pabelicjush@gmail.com..
 
 
 
