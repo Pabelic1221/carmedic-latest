@@ -1,17 +1,17 @@
 # CarMedic
 
-CarMedic is a comprehensive car diagnostic tool that helps you identify and troubleshoot issues with your vehicle. This project aims to provide an easy-to-use interface for car owners and mechanics to diagnose and fix car problems efficiently.
+CarMedic is a powerful car diagnostic tool designed for vehicle owners and mechanics. It provides an intuitive interface to identify and troubleshoot car issues efficiently.
 
 ## Features
 
-- **Real-time Diagnostics**: Get real-time data from your car's onboard computer.
-- **Error Code Lookup**: Easily look up error codes and get detailed descriptions.
-- **Maintenance Reminders**: Set reminders for regular maintenance tasks.
-- **Vehicle History**: Keep track of your vehicle's diagnostic history.
+- **Real-time Diagnostics**: Access real-time data from your car's onboard computer.
+- **Error Code Lookup**: Quickly look up error codes with detailed explanations.
+- **Maintenance Reminders**: Set reminders for scheduled maintenance tasks.
+- **Vehicle History**: Keep track of your car's diagnostic history.
 
 ## Installation
 
-To install CarMedic, follow these steps:
+Follow these steps to install CarMedic:
 
 1. Clone the repository:
     ```bash
@@ -21,118 +21,65 @@ To install CarMedic, follow these steps:
     ```bash
     cd carmedic
     ```
-3. Install the dependencies:
+3. Install dependencies:
     ```bash
     npm install
     ```
 
-## Usage
+## Running the Mobile App in Development Mode
 
-To start using CarMedic, run the following command:
-```bash
-npm start
-```
+CarMedic is built with Expo for React Native development. To run the mobile app:
 
-## Contributing
-
-We welcome contributions from the community. To contribute, please follow these steps:
-
-1. Fork the repository.
-2. Create a new branch:
+1. Start the development server:
     ```bash
-    git checkout -b feature-branch
+    npx expo start
     ```
-3. Make your changes and commit them:
-    ```bash
-    git commit -m "Description of your changes"
-    ```
-4. Push to the branch:
-    ```bash
-    git push origin feature-branch
-    ```
-5. Create a pull request.
+2. Install the Expo Go app on your Android device from the [Google Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent).
+3. Scan the QR code displayed in the terminal using the Expo Go app to launch CarMedic.
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Contact
-
-For any questions or suggestions, please open an issue or contact us at support@carmedic.com.
 ## Dependencies Installation Guide
 
-CarMedic relies on several dependencies to function correctly. Below is a guide on how to install each dependency:
+Ensure your system meets the following requirements before installing dependencies:
 
-### Node.js and npm
+### Prerequisites
 
-CarMedic is built using Node.js and npm. Ensure you have them installed on your system.
+- **Node.js**: Install from [nodejs.org](https://nodejs.org/).
+- **npm**: Comes bundled with Node.js.
+- **Git**: Install from [git-scm.com](https://git-scm.com/).
 
-1. **Node.js**: Download and install Node.js from [nodejs.org](https://nodejs.org/).
-2. **npm**: npm is included with Node.js. Verify the installation by running:
-    ```bash
-    node -v
-    npm -v
-    ```
+### Installing Dependencies
 
-### Project Dependencies
-
-After cloning the repository and navigating to the project directory, install the project dependencies using npm:
+After cloning the repository, install project dependencies:
 
 ```bash
 npm install
 ```
 
-This command will install all the required packages listed in the `package.json` file.
+Additional dependencies may be required for specific features:
 
-### Additional Dependencies
-
-If your project uses additional tools or libraries, ensure they are installed as well. For example:
-
-- **Express**: A web framework for Node.js.
+- **Express** (for backend services):
     ```bash
     npm install express
     ```
-- **Mongoose**: A MongoDB object modeling tool.
+- **Mongoose** (for MongoDB integration):
     ```bash
     npm install mongoose
     ```
 
-Refer to the `package.json` file for a complete list of dependencies and their versions.
+Check the `package.json` file for a complete list of dependencies.
 
-### Database Setup
+## Database Setup
 
-If your project requires a database, follow the setup instructions for your specific database. For example, if using MongoDB:
-
-1. Install MongoDB from [mongodb.com](https://www.mongodb.com/).
-2. Start the MongoDB server:
-    ```bash
-    mongod
-    ```
-
-### Environment Variables
-
-Ensure you have all necessary environment variables set up. Create a `.env` file in the project root and add your variables there. For example:
-
-```
-DB_CONNECTION=mongodb://localhost:27017/carmedic
-PORT=3000
-```
-
-Refer to the project documentation for a complete list of required environment variables.
-
-### Database Setup
-
-CarMedic uses Firebase as its database. Follow these steps to set up Firebase for your project:
+CarMedic uses Firebase for data storage. To set up Firebase:
 
 1. Go to the [Firebase Console](https://console.firebase.google.com/).
-2. Create a new project or select an existing project.
-3. In the project overview, click on the web icon to set up Firebase for a web app.
-4. Register your app and copy the Firebase configuration object.
-5. Install Firebase in your project:
+2. Create or select an existing project.
+3. Register your app and copy the Firebase configuration object.
+4. Install Firebase in your project:
     ```bash
     npm install firebase
     ```
-6. Create a `firebase.js` file in your project and initialize Firebase with your configuration:
+5. Create a `firebase.js` file and initialize Firebase:
     ```javascript
     import firebase from 'firebase/app';
     import 'firebase/firestore';
@@ -147,7 +94,6 @@ CarMedic uses Firebase as its database. Follow these steps to set up Firebase fo
     };
 
     firebase.initializeApp(firebaseConfig);
-
     const db = firebase.firestore();
 
     export { db };
@@ -155,7 +101,7 @@ CarMedic uses Firebase as its database. Follow these steps to set up Firebase fo
 
 ### Environment Variables
 
-Ensure you have all necessary environment variables set up. Create a `.env` file in the project root and add your Firebase configuration variables there. For example:
+Store sensitive configuration details in a `.env` file:
 
 ```
 REACT_APP_FIREBASE_API_KEY=YOUR_API_KEY
@@ -166,32 +112,45 @@ REACT_APP_FIREBASE_MESSAGING_SENDER_ID=YOUR_MESSAGING_SENDER_ID
 REACT_APP_FIREBASE_APP_ID=YOUR_APP_ID
 ```
 
-Refer to the Firebase documentation for more details on setting up and using Firebase in your project.
+## Software Requirements
 
-By following these steps, you should have Firebase set up and configured correctly for the CarMedic project.
-
-## Software Installation Requirements
-
-To ensure CarMedic runs smoothly, please make sure your system meets the following software requirements:
+Ensure your system meets the following requirements:
 
 ### Operating System
 
 - **Windows**: Windows 10 or later
 - **macOS**: macOS 10.15 (Catalina) or later
-- **Linux**: Any modern distribution that supports Node.js
+- **Linux**: Any modern distribution with Node.js support
 
-### Android Version
+### Android Requirements
 
-If you are using CarMedic on an Android device, ensure your device meets the following requirements:
-
-- **Android OS**: Android 8.0 (Oreo) or later
+- **OS**: Android 8.0 (Oreo) or later
 - **RAM**: Minimum 2GB
-- **Storage**: Minimum 100MB of free space
+- **Storage**: At least 100MB free space
 
-### Additional Software
+## Contributing
 
-- **Node.js**: Version 14.x or later
-- **npm**: Version 6.x or later (included with Node.js)
-- **Git**: Version control system to clone the repository
+We welcome contributions! Follow these steps to contribute:
 
-Ensure all the above software is installed and up to date before proceeding with the installation and usage of CarMedic.
+1. Fork the repository.
+2. Create a new branch:
+    ```bash
+    git checkout -b feature-branch
+    ```
+3. Make changes and commit:
+    ```bash
+    git commit -m "Description of changes"
+    ```
+4. Push to your branch:
+    ```bash
+    git push origin feature-branch
+    ```
+5. Open a pull request.
+
+
+## Contact
+
+For issues or suggestions, open an issue on GitHub or contact us at nacua.regner@gmail.com / paullinejoy0802@gmail.com / shanebaguhin9@gmail.com or pabelicjush@gmail.com.
+
+
+
