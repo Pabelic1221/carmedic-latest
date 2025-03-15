@@ -70,7 +70,11 @@ Check the `package.json` file for a complete list of dependencies.
 
 ## Database Setup
 
+<<<<<<< HEAD
 CarMedic uses Firebase for data storage. To set up Firebase:
+=======
+CarMedic uses Firebase as its database. Follow these steps to set up Firebase for your project:
+>>>>>>> 8bede204889f9609e031006da2890b98c1234aeb
 
 1. Go to the [Firebase Console](https://console.firebase.google.com/).
 2. Create or select an existing project.
@@ -154,3 +158,7 @@ For issues or suggestions, open an issue on GitHub or contact us at nacua.regner
 
 
 
+<<<<<<< HEAD
+=======
+Ensure all the above software is installed and up to date before proceeding with the installation and usage of CarMedic.
+>>>>>>> 8bede204889f9609e031006da2890b98c1234aeb
