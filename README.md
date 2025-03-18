@@ -61,10 +61,6 @@ Additional dependencies may be required for specific features:
     ```bash
     npm install express
     ```
-- **Mongoose** (for MongoDB integration):
-    ```bash
-    npm install mongoose
-    ```
 
 Check the `package.json` file for a complete list of dependencies.
 
